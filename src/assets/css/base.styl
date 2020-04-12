@@ -1,0 +1,47 @@
+.icon {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  fill: currentColor;
+  overflow: hidden;
+}
+
+html, body {
+  font-family: 'Noto Sans SC', sans-serif;
+  color: #333;
+  overscroll-behavior: none;
+  scroll-behavior: smooth;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700&display=swap');
+
+.cell {
+  padding: 14px;
+  margin-bottom: 12px;
+  border-radius: 28px;
+
+  .icon {
+    font-size: 50px;
+    margin-top: -10px;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+
+  .title {
+    font-size: 32px;
+  }
+}
+
+.image-preview {
+  background: #333;
+}
+
+.censored {
+  filter: blur(40px);
+  position: relative;
+}
+
+@font-face {
+  font-family: 'Dosis';
+  src: local('Dosis Regular'), local('Dosis-Regular'), url('./dosis-v7-latin-ext_latin-regular.woff') format('woff');
+}
