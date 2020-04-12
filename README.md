@@ -1,4 +1,7 @@
 # pixiv-viewer
+[![Build Status](https://www.travis-ci.org/journey-ad/pixiv-viewer.svg?branch=master)](https://www.travis-ci.org/journey-ad/pixiv-viewer)
+
+[DEMO](https://journey-ad.github.io/pixiv-viewer)
 
 ## Project setup
 ```
