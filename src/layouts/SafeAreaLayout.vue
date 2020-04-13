@@ -22,6 +22,7 @@ export default {
 
 <style>
 .app-safe-area {
+  padding-top: 0.8rem;
   box-sizing: border-box;
   height: 100%;
   overflow: hidden;

@@ -6,29 +6,10 @@ import BaseLayout from '@/layouts/BaseLayout'
 import MainLayout from '@/layouts/MainLayout'
 import SafeAreaLayout from '@/layouts/SafeAreaLayout'
 
-const Home = (resolve) => {
-  import(/* webpackChunkName: "home" */ '@/views/Home').then((module) => {
-    resolve(module)
-  })
-}
-
-const Search = (resolve) => {
-  import(/* webpackChunkName: "search" */ '@/views/Search').then((module) => {
-    resolve(module)
-  })
-}
-
-const Rank = (resolve) => {
-  import(/* webpackChunkName: "rank" */ '@/views/Rank').then((module) => {
-    resolve(module)
-  })
-}
-
-const Artwork = (resolve) => {
-  import(/* webpackChunkName: "artwork" */ '@/views/Artwork').then((module) => {
-    resolve(module)
-  })
-}
+import Home from '@/views/Home'
+import Search from '@/views/Search'
+import Rank from '@/views/Rank'
+import Artwork from '@/views/Artwork'
 
 Vue.use(VueRouter)
 
@@ -40,6 +21,7 @@ const routes = [
       {
         path: '/',
         component: MainLayout,
+        props: { safeArea: true },
         children: [
           {
             path: '/',
@@ -49,11 +31,6 @@ const routes = [
             path: '/home',
             name: 'Home',
             component: Home
-          },
-          {
-            path: '/search',
-            name: 'Search',
-            component: Search
           },
           {
             path: '/rank',
@@ -68,7 +45,19 @@ const routes = [
       },
       {
         path: '/',
-        component: SafeAreaLayout,
+        component: MainLayout,
+        props: { safeArea: false },
+        children: [
+          {
+            path: '/search',
+            name: 'Search',
+            component: Search
+          }
+        ]
+      },
+      {
+        path: '/',
+        component: MainLayout,
         children: [
           {
             path: '/artwork/:id',

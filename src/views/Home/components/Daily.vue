@@ -8,6 +8,7 @@
     </van-cell>
     <van-list
       v-model="loading"
+      class="artwork-list"
       :finished="finished"
       finished-text="没有更多了"
       :error.sync="error"
@@ -198,16 +199,20 @@ export default {
 }
 
 .daily {
-  .card-box {
-    display: flex;
-    flex-direction: row;
+  .artwork-list {
+    margin: 0 2px;
 
-    .column {
-      width: 50%;
+    .card-box {
+      display: flex;
+      flex-direction: row;
 
-      .image-card {
-        max-height: 360px;
-        margin: 4px 2px;
+      .column {
+        width: 50%;
+
+        .image-card {
+          max-height: 360px;
+          margin: 4px 2px;
+        }
       }
     }
   }

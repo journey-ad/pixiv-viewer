@@ -60,7 +60,7 @@ export default {
   a {
     display: inline-block;
     padding: 12px 20px;
-    margin: 8px;
+    margin: 8px 6px;
     border-radius: 24px;
     color: #333;
     background: #eee;

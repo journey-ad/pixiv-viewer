@@ -87,7 +87,7 @@ export default {
 <style lang="stylus" scoped>
 .rank-card {
   padding: 0 14px;
-  margin: 24px 0;
+  margin-bottom: 24px;
 
   .card-box {
     // padding: 0 12px;

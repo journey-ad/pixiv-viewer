@@ -3,7 +3,7 @@ import axios from 'axios'
 const baseURL = 'https://api.imjad.cn/pixiv/'
 
 axios.defaults.baseURL = baseURL
-axios.defaults.timeout = 5000
+axios.defaults.timeout = 10000
 axios.defaults.headers.post['Content-Type'] = 'application/json'
 
 const get = async (url, params) => {

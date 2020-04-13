@@ -2,7 +2,7 @@ import { get } from './http'
 import { LocalStorage, SessionStorage } from '@/utils/storage'
 import moment from 'moment'
 
-const imgProxy = url => url.replace(/i.pximg.net/g, 'pximg.boxpaper.workers.dev')
+const imgProxy = url => url.replace(/i.pximg.net/g, 'pximg.pixiv-viewer.workers.dev')
 
 const parseIllust = data => {
   let { id, title, caption, create_date, tags, tools, width, height, x_restrict, total_view, total_bookmarks } = data
