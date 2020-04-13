@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div :class="{'safe-area': safeArea}">
     <div class="app-main">
       <keep-alive>
         <router-view></router-view>
@@ -15,6 +15,12 @@ export default {
   data() {
     return {};
   },
+  props: {
+    safeArea: {
+      type: Boolean,
+      default: false
+    }
+  },
   components: {
     Nav
   }
@@ -22,6 +28,10 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
+.safe-area {
+  padding-top: 60px;
+}
+
 .app-main {
   position: relative;
   height: calc(100vh - 64px);

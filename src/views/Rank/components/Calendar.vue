@@ -43,9 +43,9 @@ export default {
   .date {
     position: absolute;
     top: 24px;
-    left: 55%;
+    left: 54%;
     transform: translateX(-50%);
-    color: #666;
+    color: #555;
     font-family: Dosis;
     font-size: 26px;
     font-weight: 600;

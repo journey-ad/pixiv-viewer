@@ -193,7 +193,7 @@ export default {
 
 <style lang="stylus" scoped>
 .rank {
-  padding-top: 90px;
+  padding-top: 70px;
   height: 100%;
   box-sizing: border-box;
 
@@ -211,8 +211,8 @@ export default {
     align-items: center;
     top: 0;
     width: 750px;
-    height: 90px;
-    padding: 12px;
+    height: 118px;
+    padding: 46px 12px 0 12px;
     box-sizing: border-box;
     background: #fff;
     z-index: 1;
@@ -239,7 +239,7 @@ export default {
     }
 
     ::v-deep .vc-popover-content-wrapper {
-      top: 72px !important;
+      top: 120px !important;
       left: auto !important;
       right: 14px;
       transform: none !important;

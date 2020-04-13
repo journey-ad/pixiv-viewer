@@ -33,6 +33,6 @@ export default {
 
 <style lang="stylus" scoped>
 .home {
-  // padding-top: 20px;
+  // padding-top: 50px;
 }
 </style>
