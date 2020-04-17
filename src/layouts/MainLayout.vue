@@ -30,13 +30,14 @@ export default {
 <style lang="stylus" scoped>
 .safe-area {
   padding-top: 60px;
+  height: calc(100vh - 60px);
 }
 
 .app-main {
   position: relative;
-  height: calc(100vh - 64px);
+  height: calc(100vh - 100px);
   // height: 100vh;
-  padding-bottom: 64px;
+  padding-bottom: 100px;
   overflow-y: scroll;
 
   &::-webkit-scrollbar {
