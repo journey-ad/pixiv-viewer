@@ -9,6 +9,19 @@
 
 <kbd><img src="pics/Screenshot_3.jpg" width="280"></kbd>　<kbd><img src="pics/Screenshot_4.jpg" width="280"></kbd>　<kbd><img src="pics/Screenshot_5.jpg" width="280"></kbd>
 
+
+## TODO
+- [ ] 基础页面
+  - [x] 首页信息流
+  - [x] 排行榜
+  - [x] 作品页面
+  - [ ] 作者信息页面
+- [x] 搜索功能
+- [ ] 以图搜图
+- [ ] 动图支持
+- [ ] 历史记录
+- [ ] 左右滑动浏览作品
+
 ## Project setup
 ```
 yarn install
