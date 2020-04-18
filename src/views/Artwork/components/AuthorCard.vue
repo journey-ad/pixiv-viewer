@@ -5,7 +5,7 @@
       <div class="author">{{author.name}}</div>
     </div>-->
 
-    <van-cell class="cell" :border="false" is-link>
+    <van-cell class="cell" :border="false" is-link @click="toAuthor(author.id)">
       <template #title>
         <img class="icon" :src="author.avatar" :alt="author.name" />
         <span class="title">{{author.name}} 的其他作品</span>
@@ -23,7 +23,7 @@
         </swiper-slide>
         <swiper-slide class="image-slide-slide">
           <ImageSlide class="slide" :images="slides">
-            <div class="link">
+            <div class="link" @click="toAuthor(author.id)">
               <Icon name="more" scale="20"></Icon>
               <div>查看更多</div>
             </div>
@@ -99,6 +99,12 @@ export default {
       this.$router.push({
         name: "Artwork",
         params: { id, list: this.memberArtwork }
+      });
+    },
+    toAuthor(id) {
+      this.$toast({
+        message: "开发中",
+        position: "bottom"
       });
     },
     ...mapActions(["setGalleryList"])

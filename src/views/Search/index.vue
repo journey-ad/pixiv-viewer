@@ -7,7 +7,7 @@
         shape="round"
         placeholder="请输入搜索关键词"
         maxlength="50"
-        @search="search"
+        @search="onBlur(true)"
         @cancel="onCancel"
         @focus="onFocus"
         @blur="onBlur(false)"
@@ -105,7 +105,7 @@ export default {
   },
   watch: {
     $route() {
-      console.log(this.$route.params);
+      // console.log(this.$route.params);
       let keyword = this.$route.params.keyword;
       if (!keyword || this.keywords.trim() === keyword.trim()) return;
 
