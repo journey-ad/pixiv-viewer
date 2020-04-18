@@ -30,16 +30,8 @@
           <img :src="tag.pic" alt />
           <div class="meta">
             <div class="content">
-              <div
-                class="name"
-                v-if="tag.name"
-                :class="{s: tag.name.length>=10, m: tag.name.length>=6}"
-              >#{{tag.name}}</div>
-              <div
-                class="tname"
-                v-if="tag.tname"
-                :class="{s: tag.tname.length>=10, m: tag.tname.length>=6}"
-              >{{tag.tname}}</div>
+              <div class="name" v-if="tag.name" :class="[getLength(tag.name)]">#{{tag.name}}</div>
+              <div class="tname" v-if="tag.tname" :class="[getLength(tag.tname)]">{{tag.tname}}</div>
             </div>
           </div>
         </div>
@@ -71,6 +63,15 @@ export default {
         this.loading = false;
         this.error = true;
       }
+    },
+    getLength(val) {
+      if (val.length >= 10) {
+        return "s";
+      }
+      if (val.length >= 4) {
+        return "m";
+      }
+      return "l";
     }
   },
   mounted() {
@@ -121,8 +122,12 @@ export default {
           margin: 10px 0;
         }
 
-        .m {
+        .l {
           font-size: 30px;
+        }
+
+        .m {
+          font-size: 26px;
         }
 
         .s {

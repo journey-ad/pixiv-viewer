@@ -7,11 +7,11 @@
         shape="round"
         placeholder="请输入搜索关键词"
         maxlength="50"
-        @search="onSearch"
+        @search="search"
         @cancel="onCancel"
         @focus="onFocus"
         @blur="onBlur(false)"
-      />
+      ></van-search>
       <div class="search-bar-word" @click="handleWordsClick($event)" ref="words">
         <span class="placeholder" v-if="keywordsList.length===0 && !lastWord">请输入搜索关键词</span>
         <div class="word" v-for="(keyword, index) in keywordsList" :key="index">
@@ -22,10 +22,12 @@
           <span class="text no-line">{{lastWord}}</span>
         </div>
       </div>
-      <div class="search-history" v-if="focus">
+      <div class="search-history" v-if="searchHistory.length>0 && focus">
         <div class="title-bar">
           历史搜索
-          <Icon name="del" scale="2" @click.stop="clearHistory"></Icon>
+          <div @click="clearHistory">
+            <Icon name="del" scale="2"></Icon>
+          </div>
         </div>
         <div
           class="keyword"
@@ -36,8 +38,43 @@
       </div>
     </form>
     <div class="list-wrap" :class="{mask: focus}">
-      <div class="result-list"></div>
-      <Tags @search="searchTag" />
+      <van-list
+        v-if="artList.length>0"
+        class="result-list"
+        v-model="loading"
+        :finished="finished"
+        finished-text="没有更多了"
+        :error.sync="error"
+        error-text="网络异常，点击重新加载"
+        @load="search"
+      >
+        <div class="card-box">
+          <div class="column">
+            <ImageCard
+              mode="cover"
+              :artwork="art"
+              @click-card="toArtwork($event)"
+              v-for="art in odd(artList.slice(3))"
+              :key="art.id"
+            />
+          </div>
+          <div class="column">
+            <ImageCard
+              mode="cover"
+              :artwork="art"
+              @click-card="toArtwork($event)"
+              v-for="art in even(artList.slice(3))"
+              :key="art.id"
+            />
+          </div>
+        </div>
+      </van-list>
+      <Tags v-if="keywords.trim()===''" @search="searchTag" />
+      <van-loading
+        v-show="keywords.trim()!=='' && artList.length===0"
+        class="loading"
+        :size="'50px'"
+      />
     </div>
     <transition name="fade">
       <div class="mask" @click="onBlur(true)" v-show="focus"></div>
@@ -46,30 +83,36 @@
 </template>
 
 <script>
-import { Search } from "vant";
+import { Search, List, Loading, Empty, Icon } from "vant";
+import ImageCard from "@/components/ImageCard";
 import Tags from "./components/Tags";
+import { mapState, mapActions } from "vuex";
+import api from "@/api";
 export default {
   data() {
     return {
+      keywords__: "",
       keywords: "", // 关键词搜索框真实搜索内容
       keywordsList: [], // 关键词搜索框分词列表（空格分割）
       lastWord: "", // 正在输入的关键词
       focus: false, // 编辑框是否获取焦点
+      curPage: 1,
       artList: [], // 作品列表
-      searchHistory: [
-        "魅惑のふともも",
-        "着衣巨乳",
-        "ティファ・ロックハート",
-        "魅惑のふともも",
-        "着衣巨乳",
-        "ティファ・ロックハート",
-        "魅惑のふともも",
-        "着衣巨乳",
-        "ティファ・ロックハート"
-      ]
+      error: false,
+      loading: false,
+      finished: false
     };
   },
   watch: {
+    $route() {
+      console.log(this.$route.params);
+      let keyword = this.$route.params.keyword;
+      if (!keyword || this.keywords.trim() === keyword.trim()) return;
+
+      this.keywords = keyword + " ";
+      this.reset();
+      this.search(this.keywords);
+    },
     keywords() {
       // 当关键词内容发生变化
       let keywordsList = this.keywords
@@ -90,11 +133,18 @@ export default {
       this.$nextTick(() => {
         // 保持滚动条在尾部，使用nextTick确保及时更新
         this.$refs.words.scrollLeft = this.$refs.words.clientWidth;
+        document.querySelector(".list-wrap").scrollTo({ top: 0 });
       });
     }
   },
-  computed: {},
+  computed: {
+    ...mapState(["searchHistory"])
+  },
   methods: {
+    reset() {
+      this.curPage = 1;
+      this.artList = [];
+    },
     handleWordsClick(e) {
       // 处理点击事件
       let target = e.target;
@@ -106,29 +156,89 @@ export default {
         let keywordsList = this.keywords.trim().split(" "); // 关键词按空格分割
         keywordsList.splice(target.dataset.index, 1); // 移除点击对象对应索引的关键词
         this.keywords = keywordsList.join(" ") + " "; // 赋值回去
+        this.reset();
+        this.search(this.keywords);
       }
     },
-    onSearch(val) {},
+    async search(val) {
+      val = val || this.keywords;
+      this.keywords__ = val;
+      val = val.trim();
+      if (val === "") {
+        return;
+      }
+      console.log(val);
+
+      this.setSearchHistory(val);
+
+      let res = await api.search(val, this.curPage);
+      if (res.status === 0) {
+        let newList = res.data;
+        let artList = JSON.parse(JSON.stringify(this.artList));
+
+        artList.push(...newList);
+        let _temp = {};
+        artList = artList.reduce((current, next) => {
+          _temp[next.id] ? "" : (_temp[next.id] = true && current.push(next));
+          return current;
+        }, []);
+
+        this.artList = artList;
+        this.loading = false;
+        this.curPage++;
+        if (this.curPage > 5) this.finished = true;
+      } else {
+        this.$toast({
+          message: res.msg
+        });
+        this.loading = false;
+        this.error = true;
+      }
+      this.isLoading = false;
+    },
+    odd(list) {
+      return list.filter((_, index) => (index + 1) % 2);
+    },
+    even(list) {
+      return list.filter((_, index) => !((index + 1) % 2));
+    },
+    toArtwork(id) {
+      this.$router.push({
+        name: "Artwork",
+        params: { id, list: this.artList }
+      });
+    },
     onCancel() {},
     onFocus() {
       this.focus = true; // 获取焦点
     },
     onBlur(flag) {
-      this.keywords = `${this.keywords} `.replace(/\s\s+/g, " "); // 去除多余空格
+      let keywords = `${this.keywords} `.replace(/\s\s+/g, " ");
+
+      this.keywords = keywords; // 去除多余空格
       this.$nextTick(() => {
         this.$refs.words.scrollLeft = this.$refs.words.clientWidth; // 滚动至最后
       });
 
-      if (flag) this.focus = false; // 失去焦点
+      if (flag) {
+        this.focus = false; // 失去焦点
+
+        if (this.keywords__ === keywords) {
+          return false;
+        } else {
+          this.reset();
+          this.search(this.keywords);
+        }
+      }
     },
     searchTag(keywords) {
       this.keywords = keywords + " ";
       this.onBlur(true);
     },
     clearHistory() {
-      this.searchHistory = [];
-      console.log(this.searchHistory);
-    }
+      this.setSearchHistory(null);
+    },
+    ...mapActions(["setSearchHistory"])
   },
   mounted() {
     let input = document.querySelector('input[type="search"]');
@@ -136,10 +246,22 @@ export default {
       if (this.focus)
         input.setSelectionRange(input.value.length, input.value.length);
     });
+
+    let keyword = this.$route.params.keyword;
+    if (this.$route.name === "Search" && keyword) {
+      this.keywords = keyword + " ";
+      this.reset();
+      this.search(this.keywords);
+    }
   },
   components: {
     Tags,
-    [Search.name]: Search
+    [Search.name]: Search,
+    [List.name]: List,
+    [Loading.name]: Loading,
+    [Empty.name]: Empty,
+    [Icon.name]: Icon,
+    ImageCard
   }
 };
 </script>
@@ -171,21 +293,40 @@ export default {
       // height: 500px;
     }
 
+    ::v-deep {
+      .van-icon-search {
+        margin-top: 4px;
+        margin-left: 2px;
+        font-size: 20px;
+      }
+
+      .van-icon-clear {
+        margin-top: 2px;
+        margin-right: -2px;
+        font-size: 20px;
+      }
+    }
+
     .search-bar {
       position: absolute;
       width: 100%;
-      top: 40px;
+      height: 128px;
+      top: 26px;
 
-      ::v-deep input {
-        display: inline-block;
-        opacity: 0;
+      ::v-deep .van-cell {
+        line-height: 32px;
+
+        input {
+          display: inline-block;
+          opacity: 0;
+        }
       }
     }
 
     .search-bar-word {
       position: absolute;
       top: 70px;
-      left: 88px;
+      left: 75px;
       font-size: 0;
       width: 100%;
       max-width: 580px;
@@ -205,10 +346,10 @@ export default {
         display: inline-block;
         color: #fff;
         background: #7bb7e7;
-        padding: 4px 8px;
+        padding: 6px 8px;
         margin: 0 4px;
         border-radius: 8px;
-        font-size: 28px;
+        font-size: 24px;
         overflow: hidden;
 
         .text {
@@ -256,6 +397,10 @@ export default {
         border-radius: 26px;
         margin: 12px 12px;
         user-select: none;
+        white-space: nowrap;
+        max-width: 50%;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
     }
   }
@@ -275,6 +420,31 @@ export default {
     // pointer-events: none;
     background: rgba(0, 0, 0, 0.6);
     transition: all 0.2s;
+  }
+}
+
+.loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.result-list {
+  margin: 0 2px;
+
+  .card-box {
+    display: flex;
+    flex-direction: row;
+
+    .column {
+      width: 50%;
+
+      .image-card {
+        max-height: 360px;
+        margin: 4px 2px;
+      }
+    }
   }
 }
 </style>

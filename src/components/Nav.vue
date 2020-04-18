@@ -13,6 +13,10 @@
         <Icon class="icon" name="rank" index="Rank" :currentIndex="$route.name" />
         <span>排行榜</span>
       </li>
+      <li @click="navigateTo('Setting')">
+        <Icon class="icon" name="setting" index="Setting" :currentIndex="$route.name" />
+        <span>设置</span>
+      </li>
     </ul>
   </div>
 </template>
