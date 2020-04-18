@@ -9,6 +9,7 @@ import SafeAreaLayout from '@/layouts/SafeAreaLayout'
 import Home from '@/views/Home'
 import Search from '@/views/Search'
 import Rank from '@/views/Rank'
+import Setting from '@/views/Setting'
 import Artwork from '@/views/Artwork'
 
 Vue.use(VueRouter)
@@ -40,6 +41,11 @@ const routes = [
             path: '/rank/:type',
             name: 'Rank',
             component: Rank
+          },
+          {
+            path: '/setting',
+            name: 'Setting',
+            component: Setting
           }
         ]
       },

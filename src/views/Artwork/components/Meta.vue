@@ -24,8 +24,8 @@
     </div>
     <ul class="tag-list" :class="{censored: isCensored(artwork)}">
       <template v-for="tag in artwork.tags">
-        <li class="tag name">#{{tag.name}}</li>
-        <li class="tag translated" v-if="tag.translated_name">{{tag.translated_name}}</li>
+        <li class="tag name" @click="toSearch(tag.name)">#{{tag.name}}</li>
+        <li class="tag translated" @click="toSearch(tag.name)" v-if="tag.translated_name">{{tag.translated_name}}</li>
       </template>
     </ul>
     <div
@@ -99,6 +99,14 @@ export default {
       if (e.target.tagName === "A") {
         window.open(e.target.href);
       }
+    },
+    toSearch(keyword){
+      this.$router.push({
+        name: 'Search',
+        params: {
+          keyword: keyword
+        }
+      })
     }
   },
   mounted() {

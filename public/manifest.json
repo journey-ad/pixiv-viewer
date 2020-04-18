@@ -2,8 +2,8 @@
   "id": "pixiv_viewer",
   "name": "Pixiv Viewer",
   "version": {
-    "name": "1.0.0",
-    "code": "100"
+    "name": "1.0.1",
+    "code": "101"
   },
   "description": "Pixiv Viewer",
   "icons": {

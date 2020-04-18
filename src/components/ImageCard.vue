@@ -10,6 +10,12 @@
       class="image"
       :class="{censored: isCensored(artwork)}"
     />
+    <van-tag
+      class="tag-r18"
+      round
+      :color="tagText==='R-18'?'#fb7299':'#ff3f3f'"
+      v-if="tagText"
+    >{{tagText}}</van-tag>
     <div class="layer-num" v-if="mode==='cover' && artwork.count>1">
       <Icon name="layer" scale="1.5"></Icon>
       {{artwork.count}}
@@ -25,6 +31,7 @@
 </template>
 
 <script>
+import { Tag } from "vant";
 import { mapGetters } from "vuex";
 export default {
   data() {
@@ -47,6 +54,15 @@ export default {
     }
   },
   computed: {
+    tagText() {
+      if (this.artwork.x_restrict === 1) {
+        return "R-18";
+      } else if (this.artwork.x_restrict === 2) {
+        return "R-18G";
+      } else {
+        return false;
+      }
+    },
     ...mapGetters(["isCensored"])
   },
   methods: {
@@ -59,6 +75,9 @@ export default {
 
       this.$emit("click-card", id);
     }
+  },
+  components: {
+    [Tag.name]: Tag
   }
 };
 </script>
@@ -81,6 +100,12 @@ export default {
       width: 100px;
       height: 100px;
     }
+  }
+
+  .tag-r18 {
+    position: absolute;
+    top: 8px;
+    left: 6px;
   }
 
   .layer-num {

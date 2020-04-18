@@ -10,9 +10,11 @@ export default new Vuex.Store({
     galleryList: [],
     currentIndex: -1,
     $swiper: null,
-    SETTING: {
-      r18: false
-    }
+    searchHistory: LocalStorage.get('__PIXIV_searchHistory', []),
+    SETTING: LocalStorage.get('__PIXIV_SETTING', {
+      r18: false,
+      r18g: false
+    })
   },
   getters: {
     currentId: state => state.galleryList[state.currentIndex] ? state.galleryList[state.currentIndex].id : -1,
@@ -37,8 +39,19 @@ export default new Vuex.Store({
     setSwiper(state, obj) {
       state.$swiper = obj
     },
-    SETTING(state, { key, val }) {
-      state.settings[key] = val
+    setSearchHistory(state, obj) {
+      if (obj === null) {
+        state.searchHistory = []
+        LocalStorage.remove('__PIXIV_searchHistory')
+      } else {
+        if (state.searchHistory.includes(obj)) return false
+        if (state.searchHistory.length >= 20) state.searchHistory.shift()
+        state.searchHistory.push(obj)
+        LocalStorage.set('__PIXIV_searchHistory', state.searchHistory)
+      }
+    },
+    saveSETTING(state, obj) {
+      state.SETTING = obj
       LocalStorage.set('__PIXIV_SETTING', state.SETTING)
     }
   },
@@ -52,8 +65,11 @@ export default new Vuex.Store({
     setSwiper({ commit }, value) {
       commit('setSwiper', value)
     },
-    SETTING({ commit }, { key, val }) {
-      commit('SETTING', { key, val })
+    setSearchHistory({ commit }, value) {
+      commit('setSearchHistory', value)
+    },
+    saveSETTING({ commit }, value) {
+      commit('saveSETTING', value)
     }
   },
   modules: {

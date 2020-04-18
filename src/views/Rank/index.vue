@@ -227,7 +227,7 @@ export default {
 
       .date {
         position: absolute;
-        top: 24px;
+        top: 21.5px;
         left: 55%;
         transform: translateX(-50%);
         color: #666;
