@@ -5,8 +5,9 @@
 
 [APK(5+)](pics/pixiv_viewer_0418200400.apk)
 
-<img src="pics/Screenshot_0.jpg" width="280"><img src="pics/Screenshot_1.jpg" width="280"><img src="pics/Screenshot_2.jpg" width="280">
-<img src="pics/Screenshot_3.jpg" width="280"><img src="pics/Screenshot_4.jpg" width="280"><img src="pics/Screenshot_5.jpg" width="280">
+<kbd><img src="pics/Screenshot_0.jpg" width="280"></kbd>　<kbd><img src="pics/Screenshot_1.jpg" width="280"></kbd>　<kbd><img src="pics/Screenshot_2.jpg" width="280"></kbd>
+
+<kbd><img src="pics/Screenshot_3.jpg" width="280"></kbd>　<kbd><img src="pics/Screenshot_4.jpg" width="280"></kbd>　<kbd><img src="pics/Screenshot_5.jpg" width="280"></kbd>
 
 ## Project setup
 ```
