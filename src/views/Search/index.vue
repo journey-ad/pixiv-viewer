@@ -87,6 +87,7 @@ import { Search, List, Loading, Empty, Icon } from "vant";
 import ImageCard from "@/components/ImageCard";
 import Tags from "./components/Tags";
 import { mapState, mapActions } from "vuex";
+import _ from "lodash";
 import api from "@/api";
 export default {
   data() {
@@ -123,6 +124,7 @@ export default {
       if (keywordsList.length === 1 && keywordsList[0] === "") {
         // 只输入空格的情况清空关键词列表并返回
         this.keywordsList = [];
+        this.reset();
         return;
       }
 
@@ -133,7 +135,8 @@ export default {
       this.$nextTick(() => {
         // 保持滚动条在尾部，使用nextTick确保及时更新
         this.$refs.words.scrollLeft = this.$refs.words.clientWidth;
-        document.querySelector(".list-wrap").scrollTo({ top: 0 });
+        let listWrap = document.querySelector(".list-wrap");
+        listWrap && listWrap.scrollTo({ top: 0 });
       });
     }
   },
@@ -144,6 +147,8 @@ export default {
     reset() {
       this.curPage = 1;
       this.artList = [];
+      this.loading = false;
+      this.finished = false;
     },
     handleWordsClick(e) {
       // 处理点击事件
@@ -160,11 +165,13 @@ export default {
         this.search(this.keywords);
       }
     },
-    async search(val) {
+    search: _.throttle(async function(val) {
       val = val || this.keywords;
       this.keywords__ = val;
       val = val.trim();
       if (val === "") {
+        this.keywords = "";
+        this.reset();
         return;
       }
       console.log(val);
@@ -195,7 +202,7 @@ export default {
         this.error = true;
       }
       this.isLoading = false;
-    },
+    }, 5000),
     odd(list) {
       return list.filter((_, index) => (index + 1) % 2);
     },
@@ -213,12 +220,25 @@ export default {
       this.focus = true; // 获取焦点
     },
     onBlur(flag) {
-      let keywords = `${this.keywords} `.replace(/\s\s+/g, " ");
+      let keywords = `${this.keywords} `.replace(/\s\s+/g, " "); // 去除多余空格
 
-      this.keywords = keywords; // 去除多余空格
+      this.keywords = keywords;
       this.$nextTick(() => {
         this.$refs.words.scrollLeft = this.$refs.words.clientWidth; // 滚动至最后
       });
+
+      if (/^\d+$/.test(keywords.trim())) {
+        this.$router.push({
+          name: "Artwork",
+          params: {
+            id: keywords.trim()
+          }
+        });
+        this.keywords = "";
+        this.keywordsList = [];
+        this.lastWord = "";
+        return;
+      }
 
       if (flag) {
         this.focus = false; // 失去焦点
