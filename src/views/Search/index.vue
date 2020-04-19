@@ -199,7 +199,7 @@ export default {
         let artList = JSON.parse(JSON.stringify(this.artList));
 
         artList.push(...newList);
-        artList = _.uniqBy(artList, "id")
+        artList = _.uniqBy(artList, "id");
 
         this.artList = artList;
         this.loading = false;
@@ -411,6 +411,7 @@ export default {
       position: fixed;
       top: 154px;
       width: 100%;
+      max-width: 10rem;
       height: calc(100% - 124px);
       box-sizing: border-box;
       // pointer-events: none;
@@ -467,6 +468,7 @@ export default {
         position: fixed;
         top: 148px;
         width: 100%;
+        max-width: 10rem;
         height: calc(100% - 124px);
         box-sizing: border-box;
         // pointer-events: none;
