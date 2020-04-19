@@ -36,8 +36,22 @@
           :key="index"
         >{{keyword}}</div>
       </div>
+      <transition-group name="fade">
+        <ImageSearch
+          v-show="!focus && imageSearchShow"
+          @show="switchImageSearchShow(true)"
+          ref="imageSearch"
+          key="container"
+        ></ImageSearch>
+        <div
+          class="image-search-mask"
+          @click="switchImageSearchShow(false)"
+          v-show="!focus && maskShow"
+          key="mask"
+        ></div>
+      </transition-group>
     </form>
-    <div class="list-wrap" :class="{mask: focus}">
+    <div class="list-wrap" :class="{focus: focus}">
       <van-list
         v-if="artList.length>0"
         class="result-list"
@@ -75,10 +89,8 @@
         class="loading"
         :size="'50px'"
       />
+      <div class="mask" @click="onBlur(true)"></div>
     </div>
-    <transition name="fade">
-      <div class="mask" @click="onBlur(true)" v-show="focus"></div>
-    </transition>
   </div>
 </template>
 
@@ -86,6 +98,7 @@
 import { Search, List, Loading, Empty, Icon } from "vant";
 import ImageCard from "@/components/ImageCard";
 import Tags from "./components/Tags";
+import ImageSearch from "./components/ImageSearch";
 import { mapState, mapActions } from "vuex";
 import _ from "lodash";
 import api from "@/api";
@@ -101,7 +114,9 @@ export default {
       artList: [], // 作品列表
       error: false,
       loading: false,
-      finished: false
+      finished: false,
+      maskShow: false,
+      imageSearchShow: true
     };
   },
   watch: {
@@ -184,11 +199,7 @@ export default {
         let artList = JSON.parse(JSON.stringify(this.artList));
 
         artList.push(...newList);
-        let _temp = {};
-        artList = artList.reduce((current, next) => {
-          _temp[next.id] ? "" : (_temp[next.id] = true && current.push(next));
-          return current;
-        }, []);
+        artList = _.uniqBy(artList, "id")
 
         this.artList = artList;
         this.loading = false;
@@ -258,6 +269,10 @@ export default {
     clearHistory() {
       this.setSearchHistory(null);
     },
+    switchImageSearchShow(flag) {
+      if (!flag) this.$refs.imageSearch.reset();
+      this.maskShow = flag;
+    },
     ...mapActions(["setSearchHistory"])
   },
   mounted() {
@@ -276,6 +291,7 @@ export default {
   },
   components: {
     Tags,
+    ImageSearch,
     [Search.name]: Search,
     [List.name]: List,
     [Loading.name]: Loading,
@@ -315,8 +331,8 @@ export default {
 
     ::v-deep {
       .van-icon-search {
-        margin-top: 4px;
-        margin-left: 2px;
+        margin-top: 2px;
+        margin-left: 4px;
         font-size: 20px;
       }
 
@@ -346,7 +362,7 @@ export default {
     .search-bar-word {
       position: absolute;
       top: 70px;
-      left: 75px;
+      left: 85px;
       font-size: 0;
       width: 100%;
       max-width: 580px;
@@ -391,6 +407,17 @@ export default {
       }
     }
 
+    .image-search-mask {
+      position: fixed;
+      top: 154px;
+      width: 100%;
+      height: calc(100% - 124px);
+      box-sizing: border-box;
+      // pointer-events: none;
+      background: rgba(0, 0, 0, 0.6);
+      transition: all 0.2s;
+    }
+
     .search-history {
       // position: absolute;
       margin-top: 150px;
@@ -429,17 +456,24 @@ export default {
     position: relative;
     height: 100%;
     overflow-y: scroll;
-  }
 
-  .mask {
-    position: absolute;
-    top: 148px;
-    width: 100%;
-    height: calc(100% - 124px);
-    box-sizing: border-box;
-    // pointer-events: none;
-    background: rgba(0, 0, 0, 0.6);
-    transition: all 0.2s;
+    >.mask {
+      display: none;
+    }
+
+    &.focus {
+      >.mask {
+        display: block;
+        position: fixed;
+        top: 148px;
+        width: 100%;
+        height: calc(100% - 124px);
+        box-sizing: border-box;
+        // pointer-events: none;
+        background: rgba(0, 0, 0, 0.6);
+        transition: all 0.2s;
+      }
+    }
   }
 }
 

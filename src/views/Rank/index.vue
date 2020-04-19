@@ -142,11 +142,7 @@ export default {
         let artList = JSON.parse(JSON.stringify(this.artList));
 
         artList.push(...newList);
-        let _temp = {};
-        artList = artList.reduce((current, next) => {
-          _temp[next.id] ? "" : (_temp[next.id] = true && current.push(next));
-          return current;
-        }, []);
+        artList = _.uniqBy(artList, "id")
 
         this.artList = artList;
         this.loading = false;
