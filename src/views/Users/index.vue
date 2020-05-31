@@ -40,9 +40,9 @@
             <span class="friend" v-if="userInfo.friend">
               <span class="num">{{userInfo.friend}}</span>好P友
             </span>
-            <div class="detail" :class="{ex:isEx||commentHeight<200}">
+            <div class="detail" :class="{ex:isEx||commentHeight<160}">
               <div class="content" v-html="userInfo.comment" ref="comment"></div>
-              <div class="more" v-if="!isEx&&commentHeight>=200" @click="isEx=true">
+              <div class="more" v-if="!isEx&&commentHeight>=160" @click="isEx=true">
                 查看更多
                 <Icon class="icon dropdown" name="dropdown"></Icon>
               </div>
@@ -173,7 +173,7 @@ export default {
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 280px;
+      height: 200px;
       overflow: hidden;
 
       img {
