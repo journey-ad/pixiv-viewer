@@ -52,6 +52,18 @@ class Storage {
   clear() {
     this.drive.clear()
   }
+
+  get size() {
+    let total = 0;
+    for (let x in this.drive) {
+      // Value is multiplied by 2 due to data being stored in `utf-16` format, which requires twice the space.
+      let amount = (this.drive[x].length * 2);
+      if (!isNaN(amount) && Object.prototype.hasOwnProperty.call(this.drive, x)) {
+        total += amount;
+      }
+    }
+    return total.toFixed(2);
+  }
 }
 
 class Local extends Storage {

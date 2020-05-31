@@ -361,19 +361,19 @@ export default {
 
     .search-bar-word {
       position: absolute;
-      top: 70px;
-      left: 85px;
+      top: 66px;
+      left: 88px;
       font-size: 0;
       width: 100%;
       max-width: 580px;
-      height: 42px;
+      height: 52px;
       border-radius: 8px;
       overflow-x: scroll;
       white-space: nowrap;
 
       .placeholder {
         font-size: 28px;
-        line-height: 42px;
+        line-height: 52px;
         color: #adadad;
       }
 
@@ -382,8 +382,8 @@ export default {
         display: inline-block;
         color: #fff;
         background: #7bb7e7;
-        padding: 6px 8px;
-        margin: 0 4px;
+        padding: 10px 8px;
+        margin: 0 8px;
         border-radius: 8px;
         font-size: 24px;
         overflow: hidden;
