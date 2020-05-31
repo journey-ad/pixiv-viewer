@@ -5,7 +5,12 @@
       <canvas class="mask-text" ref="mask"></canvas>
     </div>
     <div class="author-info">
-      <img class="avatar" :src="artwork.author.avatar" :alt="artwork.author.name" />
+      <img
+        class="avatar"
+        :src="artwork.author.avatar"
+        :alt="artwork.author.name"
+        @click="toAuthor(artwork.author.id)"
+      />
       <div class="name-box">
         <h2 class="title">{{artwork.title}}</h2>
         <div class="author">{{artwork.author.name}}</div>
@@ -25,7 +30,11 @@
     <ul class="tag-list" :class="{censored: isCensored(artwork)}">
       <template v-for="tag in artwork.tags">
         <li class="tag name" @click="toSearch(tag.name)">#{{tag.name}}</li>
-        <li class="tag translated" @click="toSearch(tag.name)" v-if="tag.translated_name">{{tag.translated_name}}</li>
+        <li
+          class="tag translated"
+          @click="toSearch(tag.name)"
+          v-if="tag.translated_name"
+        >{{tag.translated_name}}</li>
       </template>
     </ul>
     <div
@@ -100,13 +109,19 @@ export default {
         window.open(e.target.href);
       }
     },
-    toSearch(keyword){
+    toAuthor(id) {
       this.$router.push({
-        name: 'Search',
+        name: "Users",
+        params: { id }
+      });
+    },
+    toSearch(keyword) {
+      this.$router.push({
+        name: "Search",
         params: {
           keyword: keyword
         }
-      })
+      });
     }
   },
   mounted() {
@@ -138,7 +153,7 @@ export default {
 
   .author-info {
     height: 86px;
-    margin: 12px 0;
+    margin: 10px 0 20px 0;
 
     .avatar {
       float: left;

@@ -393,7 +393,7 @@ export default {
           padding-right: 8px;
 
           &.no-line {
-            border-color: transparent;
+            border-color: rgba(#fff, 0);
           }
         }
 

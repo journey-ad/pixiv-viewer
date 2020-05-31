@@ -102,9 +102,9 @@ export default {
       });
     },
     toAuthor(id) {
-      this.$toast({
-        message: "开发中",
-        position: "bottom"
+      this.$router.push({
+        name: "Users",
+        params: { id }
       });
     },
     ...mapActions(["setGalleryList"])

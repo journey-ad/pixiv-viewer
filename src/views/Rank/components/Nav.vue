@@ -59,8 +59,9 @@ export default {
 
   a {
     display: inline-block;
+    font-size: 28px;
     padding: 12px 20px;
-    margin: 8px 6px;
+    margin: 12px 6px;
     border-radius: 24px;
     color: #333;
     background: #eee;

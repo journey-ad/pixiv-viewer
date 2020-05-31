@@ -145,7 +145,7 @@ export default {
       right: 0;
       bottom: 0;
       left: 0;
-      background: linear-gradient(to top, rgb(255, 255, 255), transparent);
+      background: linear-gradient(to top, rgb(255, 255, 255), rgba(#fff, 0));
     }
 
     .dropdown {
@@ -154,7 +154,8 @@ export default {
       left: 50%;
       transform: translateX(-50%);
       z-index: 1;
-      filter: drop-shadow(1px 4px 4px rgba(0, 0, 0, 0.5));
+      color #fafafa
+      filter: drop-shadow(1px 4px 8px rgba(0, 0, 0, 0.2));
       animation: ani-dropdown 2s ease-in-out infinite;
     }
 

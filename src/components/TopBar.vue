@@ -9,8 +9,18 @@
 <script>
 import { NavBar } from "vant";
 export default {
+  props: {
+    action: {
+      type: Function
+    }
+  },
   methods: {
     back() {
+      if (this.action) {
+        this.action();
+        return;
+      }
+
       if (history.length <= 2) {
         this.$router.push({ name: "Home" });
       } else {
@@ -31,7 +41,7 @@ export default {
   padding-top: 60px;
   width: 100%;
   max-width: 10rem;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), transparent);
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(#fff, 0));
   z-index: 99;
 
   svg {

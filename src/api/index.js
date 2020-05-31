@@ -3,7 +3,55 @@ import { LocalStorage, SessionStorage } from '@/utils/storage'
 import moment from 'moment'
 import { Base64 } from 'js-base64';
 
-const imgProxy = url => url.replace(/i.pximg.net/g, 'pximg.pixiv-viewer.workers.dev')
+const isSupportWebP = (() => {
+  const elem = document.createElement('canvas');
+
+  if (elem.getContext && elem.getContext('2d')) {
+    // was able or not to get WebP representation
+    return elem.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+  }
+
+  // very old browser like IE 8, canvas not supported
+  return false;
+})();
+
+const imgProxy = url => {
+  let result = url.replace(/i.pximg.net/g, 'pximg.pixiv-viewer.workers.dev')
+
+  if (!isSupportWebP) {
+    result = result.replace(/_10_webp/g, '_70')
+    result = result.replace(/_webp/g, '')
+  }
+  return result
+}
+
+const parseUser = data => {
+  const { user, profile, workspace } = data
+  let { id, account, name, comment } = user
+  let { background_image_url, birth, birth_day, gender, is_premium, is_using_custom_profile_image, job, total_follow_users, total_mypixiv_users, total_illust_bookmarks_public, total_illusts, twitter_account, twitter_url, webpage } = profile
+
+  return {
+    id,
+    account,
+    name,
+    comment,
+    avatar: imgProxy(user.profile_image_urls.medium),
+    bgcover: background_image_url,
+    birth: `${birth}-${birth_day}`,
+    gender,
+    is_premium,
+    is_using_custom_profile_image,
+    job,
+    follow: total_follow_users,
+    friend: total_mypixiv_users,
+    bookmarks: total_illust_bookmarks_public,
+    illusts: total_illusts,
+    twitter_account,
+    twitter_url,
+    webpage,
+    workspace
+  }
+}
 
 const parseIllust = data => {
   let { id, title, caption, create_date, tags, tools, width, height, x_restrict, total_view, total_bookmarks } = data
@@ -311,7 +359,7 @@ const api = {
           msg: res.error.user_message || res.error.message
         }
       } else {
-        memberInfo = res
+        memberInfo = parseUser(res)
       }
 
       LocalStorage.set(`memberInfo_${id}`, memberInfo)
@@ -326,14 +374,16 @@ const api = {
   /**
    * 
    * @param {Number} id 画师ID
+   * @param {Number} page 页数 
    */
-  async getMemberArtwork(id) {
+  async getMemberArtwork(id, page) {
     let memberArtwork
-    if (!LocalStorage.has(`memberArtwork_${id}`)) {
+    if (!LocalStorage.has(`memberArtwork_${id}_p${page}`)) {
 
       let res = await get('/v2/', {
         type: 'member_illust',
-        id
+        id,
+        page
       })
 
       let data
@@ -355,12 +405,56 @@ const api = {
         return parseIllust(art)
       })
 
-      LocalStorage.set(`memberArtwork_${id}`, memberArtwork)
+      LocalStorage.set(`memberArtwork_${id}_p${page}`, memberArtwork)
     } else {
-      memberArtwork = LocalStorage.get(`memberArtwork_${id}`)
+      memberArtwork = LocalStorage.get(`memberArtwork_${id}_p${page}`)
     }
 
     return { status: 0, data: memberArtwork }
+  },
+
+  /**
+   * 
+   * @param {Number} id 画师ID
+   * @param {Number} max_bookmark_id max_bookmark_id
+   */
+  async getMemberFavorite(id, max_bookmark_id) {
+    let memberFavorite = {}
+    if (!LocalStorage.has(`memberFavorite_${id}_m${max_bookmark_id}`)) {
+
+      let res = await get('/v2/', {
+        type: 'favorite',
+        id,
+        max_bookmark_id
+      })
+
+      let data
+      if (res.illusts) {
+        data = res
+      } else if (res.error) {
+        return {
+          status: -1,
+          msg: res.error.user_message || res.error.message
+        }
+      } else {
+        return {
+          status: -1,
+          msg: '未知错误'
+        }
+      }
+
+      const url = new URLSearchParams(data.next_url)
+      memberFavorite.next = url.get('max_bookmark_id')
+      memberFavorite.illusts = data.illusts.map(art => {
+        return parseIllust(art)
+      })
+
+      LocalStorage.set(`memberFavorite_${id}_m${max_bookmark_id}`, memberFavorite)
+    } else {
+      memberFavorite = LocalStorage.get(`memberFavorite_${id}_m${max_bookmark_id}`)
+    }
+
+    return { status: 0, data: memberFavorite }
   },
 
   async getTags() {
