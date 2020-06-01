@@ -20,6 +20,7 @@
       <Icon name="layer" scale="1.5"></Icon>
       {{artwork.count}}
     </div>
+    <Icon class="btn-play" name="play" scale="8" v-if="mode==='cover' && artwork.type==='ugoira'"></Icon>
     <div class="meta" v-if="mode==='meta'">
       <div class="content">
         <h2 class="title">{{artwork.title}}</h2>
@@ -122,6 +123,12 @@ export default {
       vertical-align: bottom;
       margin-right: -2px;
     }
+  }
+
+  .btn-play {
+    position: absolute;
+    color: #565656;
+    opacity: 0.6;
   }
 
   .meta {

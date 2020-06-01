@@ -54,7 +54,7 @@ const parseUser = data => {
 }
 
 const parseIllust = data => {
-  let { id, title, caption, create_date, tags, tools, width, height, x_restrict, total_view, total_bookmarks } = data
+  let { id, title, caption, create_date, tags, tools, width, height, x_restrict, total_view, total_bookmarks, type } = data
   let images = []
 
   if (data.meta_single_page.original_image_url) {
@@ -93,7 +93,8 @@ const parseIllust = data => {
     count: data.page_count,
     view: total_view,
     like: total_bookmarks,
-    x_restrict
+    x_restrict,
+    type
   }
 
   return artwork
@@ -338,6 +339,40 @@ const api = {
 
 
     return { status: 0, data: artwork }
+  },
+
+  /**
+   * 
+   * @param {Number} id 作品ID
+   */
+  async ugoiraMetadata(id) {
+    let ugoira
+    if (!LocalStorage.has(`ugoira_${id}`)) {
+
+      let res = await get('/v2/', {
+        type: 'ugoira_metadata',
+        id
+      })
+
+      if (res.error) {
+        return {
+          status: -1,
+          msg: res.error.user_message || res.error.message
+        }
+      } else {
+        ugoira = {
+          zip: imgProxy(res.ugoira_metadata.zip_urls.medium),
+          frames: res.ugoira_metadata.frames
+        }
+      }
+
+      LocalStorage.set(`ugoira_${id}`, ugoira)
+    } else {
+      ugoira = LocalStorage.get(`ugoira_${id}`)
+    }
+
+
+    return { status: 0, data: ugoira }
   },
 
   /**
