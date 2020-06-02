@@ -3,7 +3,7 @@
 
 [DEMO](https://journey-ad.github.io/pixiv-viewer)
 
-[APK(5+)](https://github.com/journey-ad/pixiv-viewer/raw/master/pics/pixiv_viewer_0602052156.apk)
+[APK(5+)](https://github.com/journey-ad/pixiv-viewer/raw/master/pics/pixiv_viewer_0603041715.apk)
 
 <kbd><img src="pics/Screenshot_0.jpg" width="280"></kbd>　<kbd><img src="pics/Screenshot_1.jpg" width="280"></kbd>　<kbd><img src="pics/Screenshot_2.jpg" width="280"></kbd>
 
@@ -19,7 +19,8 @@
   - [x] 设置页面
 - [x] 搜索功能
 - [x] 以图搜图
-- [x] 动图支持
+- [x] 动图播放
+- [x] 动图下载
 - [ ] 历史记录
 - [ ] 左右滑动浏览作品
 
