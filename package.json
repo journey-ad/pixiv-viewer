@@ -11,6 +11,8 @@
     "@vant/touch-emulator": "^1.2.0",
     "axios": "^0.19.2",
     "core-js": "^3.6.4",
+    "file-saver": "^2.0.2",
+    "gifshot": "^0.4.5",
     "js-base64": "^2.5.2",
     "jszip": "^3.4.0",
     "lodash": "^4.17.15",

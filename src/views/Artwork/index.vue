@@ -2,7 +2,12 @@
   <div class="artwork">
     <TopBar />
     <div v-if="artwork">
-      <ImageView :artwork="artwork" :lazy="true" />
+      <ImageView
+        :artwork="artwork"
+        :lazy="true"
+        @open-download="ugoiraDownloadPanelShow=true"
+        ref="imgView"
+      />
       <van-skeleton class="skeleton" avatar :row="3" :avatar-size="'42px'" :loading="loading">
         <Meta :artwork="artwork" />
       </van-skeleton>
@@ -15,6 +20,15 @@
         <Related :artwork="artwork" :key="artwork.id" />
       </keep-alive>
     </div>
+    <van-action-sheet
+      v-model="ugoiraDownloadPanelShow"
+      :actions="ugoiraDownloadPanelActions"
+      @select="onUgoiraDownloadPanelSelect"
+      cancel-text="取消"
+      description="请选择下载格式"
+      close-on-popstate
+      close-on-click-action
+    />
   </div>
 </template>
 
@@ -24,7 +38,7 @@ import ImageView from "./components/ImageView";
 import Meta from "./components/Meta";
 import AuthorCard from "./components/AuthorCard";
 import Related from "./components/Related";
-import { Divider, Skeleton } from "vant";
+import { Divider, Skeleton, ActionSheet } from "vant";
 import { mapGetters, mapState } from "vuex";
 import api from "@/api";
 export default {
@@ -51,7 +65,13 @@ export default {
         loop: true,
         thresholdTime: 5000,
         thresholdDistance: 150
-      }
+      },
+      ugoiraDownloadPanelShow: false,
+      ugoiraDownloadPanelActions: [
+        { name: "ZIP", subname: "包含原始的序列帧" },
+        { name: "GIF", subname: "低画质，兼容性最佳" },
+        { name: "WebM", subname: "高画质，兼容性差", disabled: true } // TODO: webm格式支持
+      ]
     };
   },
   computed: {
@@ -60,7 +80,9 @@ export default {
   },
   methods: {
     init() {
-      document.querySelector('.app-main').scrollTo({ top: 0, behavior: "smooth" });
+      document
+        .querySelector(".app-main")
+        .scrollTo({ top: 0, behavior: "smooth" });
       this.loading = true;
       let id = +this.$route.params.id;
       this.artwork = {};
@@ -91,6 +113,9 @@ export default {
           this.$router.back();
         }, 500);
       }
+    },
+    onUgoiraDownloadPanelSelect(item) {
+      this.$refs.imgView.download(item.name);
     }
   },
   mounted() {
@@ -104,7 +129,8 @@ export default {
     AuthorCard,
     Related,
     [Divider.name]: Divider,
-    [Skeleton.name]: Skeleton
+    [Skeleton.name]: Skeleton,
+    [ActionSheet.name]: ActionSheet
   }
 };
 </script>

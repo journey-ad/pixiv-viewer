@@ -1,13 +1,22 @@
 <template>
-  <div class="image-view" :class="{shrink:isShrink}" @click="showFull" ref="view">
-    <div class="image-box" v-for="(url, index) in artwork.images" :key="index">
+  <div
+    class="image-view"
+    :class="{shrink:isShrink, loaded: artwork.images, censored: isCensored(artwork)}"
+    @click="showFull"
+    ref="view"
+  >
+    <div
+      class="image-box"
+      v-for="(url, index) in artwork.images"
+      :key="index"
+      :style="index===0 ? {width: `${deviceWidth}px`, height: `${deviceWidth / (artwork.width / artwork.height)}px`} : null"
+    >
       <!-- :style="{height: `${(375/artwork.width*artwork.height).toFixed(2)}px`}" -->
       <img
         v-if="lazy"
         v-lazy="url.l"
         :alt="`${artwork.title} - Page ${index+1}`"
         class="image"
-        :class="{censored: isCensored(artwork)}"
         @click.stop="view(index, isCensored(artwork))"
       />
       <img
@@ -15,7 +24,7 @@
         :src="url.l"
         :alt="`${artwork.title} - Page ${index+1}`"
         class="image"
-        :class="{censored: isCensored(artwork)}"
+        :style="{width: deviceWidth, height: ((artwork.width / deviceWidth) * artwork.height) * (artwork.width / artwork.height)}"
         @click.stop="view(index, isCensored(artwork))"
       />
       <canvas
@@ -25,6 +34,7 @@
         :height="artwork.height"
         id="ugoira"
         ref="ugoira"
+        @click="openDownloadPanel()"
       ></canvas>
     </div>
     <Icon v-if="isShrink" class="dropdown" name="dropdown" scale="4"></Icon>
@@ -35,6 +45,9 @@
       <div v-else class="btn-play" @click="playUgoira()">
         <Icon class="play" name="play" scale="6"></Icon>
       </div>
+      <div class="progress-bar" v-if="progressShow" :style="{width: `${progress*100}%`}">
+        <div class="background"></div>
+      </div>
     </div>
   </div>
 </template>
@@ -44,6 +57,8 @@ import { mapState, mapGetters } from "vuex";
 import { ImagePreview } from "vant";
 import axios from "axios";
 import JSZip from "jszip";
+import gifshot from "gifshot";
+import FileSaver from "file-saver";
 import api from "@/api";
 export default {
   watch: {
@@ -72,10 +87,14 @@ export default {
   },
   data() {
     return {
+      deviceWidth: 0,
       isShrink: false,
       ugoira: null,
       ugoiraPlaying: false,
-      curIndex: 0
+      ugoiraDelay: 40,
+      curIndex: 0,
+      progressShow: false,
+      progress: 0
     };
   },
   methods: {
@@ -143,6 +162,8 @@ export default {
       }
     },
     async playUgoira() {
+      if (this.progressShow) return;
+
       if (this.ugoira) {
         this.drawCanvas("play");
         return;
@@ -159,10 +180,14 @@ export default {
         zip: ugoira.zip
       };
       // console.log(this.ugoira);
+      this.progressShow = true;
       const resp = await axios.get(ugoira.zip, {
-        responseType: "blob"
+        responseType: "blob",
+        onDownloadProgress: progress => {
+          this.progress = progress.loaded / progress.total;
+        }
       });
-      // console.log(resp.data);
+      // console.log(resp);
 
       const jszip = new JSZip();
       jszip.loadAsync(resp.data).then(zip => {
@@ -172,23 +197,24 @@ export default {
           zip
             .file(name)
             .async("blob")
-            .then(blob => {
-              // const data = URL.createObjectURL(blob)
-              // console.log(data)
-              // const array = new Uint8ClampedArray(data);
-              // console.log(width * height * 4, array);
-              // const imgData = new ImageData(array, width, height);
-              index++;
+            .then(async blob => {
+              return {
+                blob: URL.createObjectURL(blob),
+                bmp: await createImageBitmap(blob)
+              };
+            })
+            .then(({ blob, bmp }) => {
+              this.ugoira.frames[name].blob = blob;
+              this.ugoira.frames[name].bmp = bmp;
 
-              const imgData = new Image();
-              imgData.src = URL.createObjectURL(blob);
-              this.ugoira.frames[name].data = imgData;
-
-              if (index === files.length) {
-                console.info("动图帧数据加载完成");
-                this.$nextTick(() => {
-                  this.drawCanvas("play");
-                });
+              if (++index === files.length) {
+                console.info(
+                  "Frames loaded:",
+                  `frames ${files.length}`,
+                  `size ${resp.data.size}`
+                );
+                this.progressShow = false;
+                this.drawCanvas("play");
               }
             });
         });
@@ -200,8 +226,7 @@ export default {
       const { width, height } = this.artwork;
 
       const frames = Object.values(this.ugoira.frames);
-
-      let length = frames.length;
+      this.ugoiraDelay = frames[0].delay;
 
       const draw = () => {
         this.curIndex++;
@@ -212,9 +237,9 @@ export default {
             // const imgUri = URL.createObjectURL(frames[this.curIndex - 1].data);
             // const imgData = new Image();
             // imgData.onload = () => {
-            ctx.drawImage(frames[this.curIndex - 1].data, 0, 0, width, height);
+            ctx.drawImage(frames[this.curIndex - 1].bmp, 0, 0, width, height);
 
-            if (this.curIndex >= length) this.curIndex = 0;
+            if (this.curIndex >= frames.length) this.curIndex = 0;
             draw();
             // };
             // imgData.src = imgUri;
@@ -230,8 +255,84 @@ export default {
         this.ugoiraPlaying = false;
       }
     },
+    downloadZIP() {
+      FileSaver.saveAs(
+        this.ugoira.zip,
+        `[${this.artwork.author.name}] ${this.artwork.title} - ${this.artwork.id}.zip`
+      );
+    },
+    downloadGIF() {
+      // 计算图片宽度为屏幕宽度时的高度
+      const gifHeight =
+        this.deviceWidth / (this.artwork.width / this.artwork.height);
+
+      /**
+       * 作品帧时长相对于gifshot最小帧时长的倍数
+       * ugoiraDelay: 1000 = 1s
+       * frameDuration: 10 = 1s
+       */
+      // const ratio = Math.floor(this.ugoiraDelay / 10);
+
+      // 按倍数进行抽帧
+      const images = Object.values(this.ugoira.frames)
+        // .filter((frame, idx) => idx % ratio === 0)
+        .map(frame => frame.blob);
+
+      gifshot.createGIF(
+        {
+          images, // 图片blob数组
+          gifWidth: this.deviceWidth,
+          gifHeight,
+          frameDuration: this.ugoiraDelay / 1000, // 帧时长 10 = 1s
+          numWorkers: 4 // 同时有几个worker线程在工作
+        },
+        obj => {
+          if (obj.error) {
+            console.error(obj.error);
+            return;
+          }
+
+          FileSaver.saveAs(
+            obj.image,
+            `[${this.artwork.author.name}] ${this.artwork.title} - ${this.artwork.id}.gif`
+          );
+        }
+      );
+    },
+    download(type) {
+      switch (type) {
+        case "ZIP":
+          this.downloadZIP();
+          break;
+
+        case "GIF":
+          this.downloadGIF();
+          break;
+
+        default:
+          break;
+      }
+    },
+    openDownloadPanel() {
+      if (this.progressShow) return;
+
+      if (this.ugoira) {
+        if (!window.plus) this.$emit("open-download");
+      } else {
+        this.playUgoira();
+      }
+    },
+    reset() {
+      this.ugoira = null;
+      this.ugoiraPlaying = false;
+      this.curIndex = 0;
+      this.progress = 0;
+      this.progressShow = false;
+    },
     init() {
+      this.reset();
       this.$nextTick(() => {
+        this.deviceWidth = document.documentElement.getBoundingClientRect().width;
         setTimeout(() => {
           if (this.artwork.images && this.artwork.images.length >= 3) {
             this.isShrink = true;
@@ -246,8 +347,7 @@ export default {
     this.init();
   },
   deactivated() {
-    this.ugoira = null;
-    this.ugoiraPlaying = false;
+    this.reset();
   }
 };
 </script>
@@ -257,6 +357,14 @@ export default {
   position: relative;
   min-height: 600px;
   background-color: #fafafa;
+
+  &.censored {
+    pointer-events: none;
+  }
+
+  &.loaded {
+    min-height: unset;
+  }
 
   &.shrink {
     max-height: 1000px;
@@ -297,14 +405,18 @@ export default {
   .image-box {
     position: relative;
     background: #fafafa;
-    min-height: 600px;
-    max-height: 1000px;
 
-    .image {
-      width: 100%;
-      height: 100%;
+    &:nth-of-type(n+2) {
       min-height: 600px;
       max-height: 1000px;
+    }
+
+    .image {
+      display: block;
+      width: 100%;
+      height: 100%;
+      // min-height: 600px;
+      // max-height: 1000px;
       object-fit: cover;
 
       &[lazy='loading'] {
@@ -329,11 +441,31 @@ export default {
 
   .ugoira-controls {
     position: absolute;
-    right: 16px;
-    bottom: 16px;
+    bottom: 0;
+    width: 100%;
 
-    .play, .pause {
+    .btn-play, .btn-pause {
+      position: absolute;
+      right: 16px;
+      bottom: 16px;
       color: rgba(122, 172, 208, 0.9);
+    }
+
+    .progress-bar {
+      position: absolute;
+      bottom: 0;
+      width: 0;
+      height: 4px;
+      overflow: hidden;
+      transition: width 0.1s;
+
+      .background {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(to right, #3fffa2 0%, #1a9be0 100%);
+      }
     }
   }
 }

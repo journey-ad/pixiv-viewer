@@ -13,6 +13,8 @@ import 'swiper/css/swiper.css'
 import '@/assets/css/base.styl'
 // import '@/assets/css/iconfont/iconfont.js'
 
+import './polyfill'
+
 Vue.use(Moment);
 Vue.use(Toast);
 Vue.use(Lazyload, {
