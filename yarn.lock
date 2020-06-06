@@ -4534,6 +4534,11 @@ getpass@^0.1.1:
   dependencies:
     assert-plus "^1.0.0"
 
+gif.js@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.npm.taobao.org/gif.js/download/gif.js-0.2.0.tgz#615e6e3788850cd3a20c85fe9f09539e784903e8"
+  integrity sha1-YV5uN4iFDNOiDIX+nwlTnnhJA+g=
+
 gifshot@^0.4.5:
   version "0.4.5"
   resolved "https://registry.npm.taobao.org/gifshot/download/gifshot-0.4.5.tgz#e3cb570203a3b139ff3069d7578098a29c03b0f8"
@@ -9442,6 +9447,11 @@ websocket-extensions@>=0.1.1:
   version "0.1.3"
   resolved "https://registry.npm.taobao.org/websocket-extensions/download/websocket-extensions-0.1.3.tgz#5d2ff22977003ec687a4b87073dfbbac146ccf29"
   integrity sha1-XS/yKXcAPsaHpLhwc9+7rBRszyk=
+
+whammy@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.npm.taobao.org/whammy/download/whammy-0.0.1.tgz#cf4bed9fbaa687eda3f42095ff99bf704b08d01e"
+  integrity sha1-z0vtn7qmh+2j9CCV/5m/cEsI0B4=
 
 when@~3.6.x:
   version "3.6.4"

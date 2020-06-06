@@ -9,7 +9,7 @@
       class="image-box"
       v-for="(url, index) in artwork.images"
       :key="index"
-      :style="index===0 ? {width: `${deviceWidth}px`, height: `${deviceWidth / (artwork.width / artwork.height)}px`} : null"
+      :style="index===0 ? {width: `${displayWidth}px`, height: `${displayWidth / (artwork.width / artwork.height)}px`} : null"
     >
       <!-- :style="{height: `${(375/artwork.width*artwork.height).toFixed(2)}px`}" -->
       <img
@@ -24,7 +24,7 @@
         :src="url.l"
         :alt="`${artwork.title} - Page ${index+1}`"
         class="image"
-        :style="{width: deviceWidth, height: ((artwork.width / deviceWidth) * artwork.height) * (artwork.width / artwork.height)}"
+        :style="{width: displayWidth, height: ((artwork.width / displayWidth) * artwork.height) * (artwork.width / artwork.height)}"
         @click.stop="view(index, isCensored(artwork))"
       />
       <canvas
@@ -58,6 +58,8 @@ import { ImagePreview } from "vant";
 import axios from "axios";
 import JSZip from "jszip";
 import gifshot from "gifshot";
+import GIF from "gif.js";
+import Whammy from "whammy";
 import FileSaver from "file-saver";
 import api from "@/api";
 export default {
@@ -87,11 +89,11 @@ export default {
   },
   data() {
     return {
-      deviceWidth: 0,
+      displayWidth: 0,
+      displayHeight: 0,
       isShrink: false,
       ugoira: null,
       ugoiraPlaying: false,
-      ugoiraDelay: 40,
       curIndex: 0,
       progressShow: false,
       progress: 0
@@ -181,44 +183,52 @@ export default {
       };
       // console.log(this.ugoira);
       this.progressShow = true;
-      const resp = await axios.get(ugoira.zip, {
-        responseType: "blob",
-        onDownloadProgress: progress => {
-          this.progress = progress.loaded / progress.total;
-        }
-      });
-      // console.log(resp);
+      axios
+        .get(ugoira.zip, {
+          responseType: "blob",
+          timeout: 1000 * 30,
+          onDownloadProgress: progress => {
+            this.progress = progress.loaded / progress.total;
+          }
+        })
+        .then(resp => {
+          const jszip = new JSZip();
+          jszip.loadAsync(resp.data).then(zip => {
+            let index = 0;
+            const files = Object.keys(zip.files);
+            files.forEach(name => {
+              zip
+                .file(name)
+                .async("blob")
+                .then(async blob => {
+                  return {
+                    blob: blob,
+                    bmp: await createImageBitmap(blob)
+                  };
+                })
+                .then(({ blob, bmp }) => {
+                  this.ugoira.frames[name].blob = blob;
+                  this.ugoira.frames[name].bmp = bmp;
 
-      const jszip = new JSZip();
-      jszip.loadAsync(resp.data).then(zip => {
-        let index = 0;
-        const files = Object.keys(zip.files);
-        files.forEach(name => {
-          zip
-            .file(name)
-            .async("blob")
-            .then(async blob => {
-              return {
-                blob: URL.createObjectURL(blob),
-                bmp: await createImageBitmap(blob)
-              };
-            })
-            .then(({ blob, bmp }) => {
-              this.ugoira.frames[name].blob = blob;
-              this.ugoira.frames[name].bmp = bmp;
-
-              if (++index === files.length) {
-                console.info(
-                  "Frames loaded:",
-                  `frames ${files.length}`,
-                  `size ${resp.data.size}`
-                );
-                this.progressShow = false;
-                this.drawCanvas("play");
-              }
+                  if (++index === files.length) {
+                    console.info(
+                      "Frames loaded:",
+                      `frames ${files.length}`,
+                      `size ${resp.data.size}`
+                    );
+                    this.progressShow = false;
+                    this.drawCanvas("play");
+                  }
+                });
             });
+          });
+        })
+        .catch(error => {
+          this.resetUgoira();
+          this.$toast({
+            message: error.message
+          });
         });
-      });
     },
     drawCanvas(action) {
       const ctx = this.$refs.ugoira[0].getContext("2d");
@@ -226,7 +236,6 @@ export default {
       const { width, height } = this.artwork;
 
       const frames = Object.values(this.ugoira.frames);
-      this.ugoiraDelay = frames[0].delay;
 
       const draw = () => {
         this.curIndex++;
@@ -237,6 +246,7 @@ export default {
             // const imgUri = URL.createObjectURL(frames[this.curIndex - 1].data);
             // const imgData = new Image();
             // imgData.onload = () => {
+            ctx.clearRect(0, 0, width, height);
             ctx.drawImage(frames[this.curIndex - 1].bmp, 0, 0, width, height);
 
             if (this.curIndex >= frames.length) this.curIndex = 0;
@@ -261,43 +271,70 @@ export default {
         `[${this.artwork.author.name}] ${this.artwork.title} - ${this.artwork.id}.zip`
       );
     },
-    downloadGIF() {
-      // 计算图片宽度为屏幕宽度时的高度
-      const gifHeight =
-        this.deviceWidth / (this.artwork.width / this.artwork.height);
+    downloadWebM() {
+      if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+        this.$toast({
+          message: "iOS 设备暂不支持 WebM 格式下载",
+          icon: require("@/svg/error.svg")
+        });
+        return;
+      }
 
-      /**
-       * 作品帧时长相对于gifshot最小帧时长的倍数
-       * ugoiraDelay: 1000 = 1s
-       * frameDuration: 10 = 1s
-       */
-      // const ratio = Math.floor(this.ugoiraDelay / 10);
+      const [width, height] = [this.displayWidth, this.displayHeight];
 
-      // 按倍数进行抽帧
-      const images = Object.values(this.ugoira.frames)
-        // .filter((frame, idx) => idx % ratio === 0)
-        .map(frame => frame.blob);
+      const cacheCanvas = document.createElement("canvas");
+      cacheCanvas.width = width;
+      cacheCanvas.height = height;
+      const ctx = cacheCanvas.getContext("2d");
 
-      gifshot.createGIF(
-        {
-          images, // 图片blob数组
-          gifWidth: this.deviceWidth,
-          gifHeight,
-          frameDuration: this.ugoiraDelay / 1000, // 帧时长 10 = 1s
-          numWorkers: 4 // 同时有几个worker线程在工作
-        },
-        obj => {
-          if (obj.error) {
-            console.error(obj.error);
-            return;
-          }
-
-          FileSaver.saveAs(
-            obj.image,
-            `[${this.artwork.author.name}] ${this.artwork.title} - ${this.artwork.id}.gif`
-          );
-        }
+      const encoder = new Whammy.Video();
+      Object.values(this.ugoira.frames).forEach(frame => {
+        ctx.clearRect(0, 0, width, height);
+        ctx.drawImage(frame.bmp, 0, 0, width, height);
+        encoder.add(ctx, frame.delay);
+      });
+      const webm = encoder.compile();
+      FileSaver.saveAs(
+        webm,
+        `[${this.artwork.author.name}] ${this.artwork.title} - ${this.artwork.id}.webm`
       );
+    },
+    downloadGIF() {
+      let images = Object.values(this.ugoira.frames),
+        offset = 1;
+      if (images.length >= 100) {
+        // 抽帧间隔
+        offset = 2;
+        images = images.filter((frame, idx) => idx % offset === 0); // 抽帧
+        // .map(frame => URL.createObjectURL(frame.blob));
+      }
+
+      const [width, height] = [this.displayWidth, this.displayHeight];
+
+      const cacheCanvas = document.createElement("canvas");
+      cacheCanvas.width = width;
+      cacheCanvas.height = height;
+      const ctx = cacheCanvas.getContext("2d");
+
+      const gif = new GIF({
+        workers: 4,
+        quality: 10,
+        width,
+        height,
+        workerScript: "./static/js/gif.worker.js"
+      });
+      Object.values(images).forEach(frame => {
+        ctx.clearRect(0, 0, width, height);
+        ctx.drawImage(frame.bmp, 0, 0, width, height);
+        gif.addFrame(ctx, { copy: true, delay: frame.delay * offset });
+      });
+      gif.on("finished", blob => {
+        FileSaver.saveAs(
+          blob,
+          `[${this.artwork.author.name}] ${this.artwork.title} - ${this.artwork.id}.gif`
+        );
+      });
+      gif.render();
     },
     download(type) {
       switch (type) {
@@ -307,6 +344,10 @@ export default {
 
         case "GIF":
           this.downloadGIF();
+          break;
+
+        case "WebM":
+          this.downloadWebM();
           break;
 
         default:
@@ -322,7 +363,7 @@ export default {
         this.playUgoira();
       }
     },
-    reset() {
+    resetUgoira() {
       this.ugoira = null;
       this.ugoiraPlaying = false;
       this.curIndex = 0;
@@ -330,9 +371,11 @@ export default {
       this.progressShow = false;
     },
     init() {
-      this.reset();
+      this.resetUgoira();
       this.$nextTick(() => {
-        this.deviceWidth = document.documentElement.getBoundingClientRect().width;
+        this.displayWidth = document.documentElement.getBoundingClientRect().width;
+        this.displayHeight =
+          this.displayWidth / (this.artwork.width / this.artwork.height);
         setTimeout(() => {
           if (this.artwork.images && this.artwork.images.length >= 3) {
             this.isShrink = true;
@@ -347,7 +390,7 @@ export default {
     this.init();
   },
   deactivated() {
-    this.reset();
+    this.resetUgoira();
   }
 };
 </script>
@@ -408,7 +451,7 @@ export default {
 
     &:nth-of-type(n+2) {
       min-height: 600px;
-      max-height: 1000px;
+      // max-height: 1000px;
     }
 
     .image {

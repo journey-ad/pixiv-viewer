@@ -68,9 +68,9 @@ export default {
       },
       ugoiraDownloadPanelShow: false,
       ugoiraDownloadPanelActions: [
-        { name: "ZIP", subname: "包含原始的序列帧" },
+        { name: "ZIP", subname: "原始序列帧归档文件" },
         { name: "GIF", subname: "低画质，兼容性最佳" },
-        { name: "WebM", subname: "高画质，兼容性差", disabled: true } // TODO: webm格式支持
+        { name: "WebM", subname: "高画质，兼容性差" } // chrome only
       ]
     };
   },
