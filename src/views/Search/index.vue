@@ -325,9 +325,11 @@ export default {
   position: relative;
 
   .search-bar-wrap {
-    position: sticky;
+    position: fixed;
+    top: 60px;
     top: env(safe-area-inset-top);
     width: 100%;
+    max-width: 10rem;
     // min-height: 122px;
     background: #fff;
     z-index: 1;
@@ -418,11 +420,11 @@ export default {
     .image-search-mask {
       position: fixed;
       top: 128px;
-      top: calc(128px + env(safe-area-inset-top));
+      top: env(safe-area-inset-top);
       width: 100%;
       max-width: 10rem;
       height: calc(100% - 128px);
-      height: calc(100% - 128px - env(safe-area-inset-top));
+      height: calc(100% - env(safe-area-inset-top));
       box-sizing: border-box;
       // pointer-events: none;
       background: rgba(0, 0, 0, 0.6);

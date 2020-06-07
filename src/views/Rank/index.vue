@@ -216,6 +216,7 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    top: 60px;
     top: env(safe-area-inset-top);
     width: 750px;
     height: 100px;
