@@ -159,7 +159,7 @@ export default {
   }
 
   .artwork-list-wrap {
-    overflow-x: scroll;
+    // overflow-x: scroll;
     border-radius: 20px;
 
     .artwork-list {

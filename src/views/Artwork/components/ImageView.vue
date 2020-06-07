@@ -57,7 +57,6 @@ import { mapState, mapGetters } from "vuex";
 import { ImagePreview } from "vant";
 import axios from "axios";
 import JSZip from "jszip";
-import gifshot from "gifshot";
 import GIF from "gif.js";
 import Whammy from "whammy";
 import FileSaver from "file-saver";
@@ -373,7 +372,7 @@ export default {
     init() {
       this.resetUgoira();
       this.$nextTick(() => {
-        this.displayWidth = document.documentElement.getBoundingClientRect().width;
+        this.displayWidth = document.getElementById('app').getBoundingClientRect().width;
         this.displayHeight =
           this.displayWidth / (this.artwork.width / this.artwork.height);
         setTimeout(() => {

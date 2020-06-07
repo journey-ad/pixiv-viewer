@@ -325,7 +325,7 @@ export default {
   position: relative;
 
   .search-bar-wrap {
-    position: fixed;
+    position: sticky;
     top: env(safe-area-inset-top);
     width: 100%;
     // min-height: 122px;
@@ -476,7 +476,7 @@ export default {
     // overflow-y: scroll;
     padding-top: 122px;
     padding-bottom: 100px;
-    padding-bottom: env(safe-area-inset-bottom);
+    padding-bottom: calc(100px + env(safe-area-inset-bottom));
     box-sizing: border-box;
 
     >.mask {
