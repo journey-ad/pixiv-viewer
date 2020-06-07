@@ -50,6 +50,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100px;
+  height: calc(100px + env(safe-area-inset-bottom));
   z-index: 10;
 
   .nav-bar {

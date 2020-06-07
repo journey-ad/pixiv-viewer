@@ -1,15 +1,5 @@
 <template>
   <div class="setting">
-    <van-cell center title="R-18作品显示" label="包含裸露内容或性描写">
-      <template #right-icon>
-        <van-switch :value="currentSETTING.r18" @input="onR18Change($event, 1)" size="24" />
-      </template>
-    </van-cell>
-    <van-cell center title="R-18G作品显示" label="包含血腥或恶心内容">
-      <template #right-icon>
-        <van-switch :value="currentSETTING.r18g" @input="onR18Change($event, 2)" size="24" />
-      </template>
-    </van-cell>
     <van-cell center title="持久化缓存" :label="size.local | bytes">
       <template #right-icon>
         <van-button type="primary" size="small" @click="clearCache('local')">清理</van-button>
@@ -18,6 +8,16 @@
     <van-cell center title="运行时缓存" :label="size.session | bytes">
       <template #right-icon>
         <van-button type="info" size="small" @click="clearCache('session')">清理</van-button>
+      </template>
+    </van-cell>
+    <van-cell center title="R-18作品显示" label="包含裸露内容或性描写">
+      <template #right-icon>
+        <van-switch :value="currentSETTING.r18" @input="onR18Change($event, 1)" size="24" />
+      </template>
+    </van-cell>
+    <van-cell center title="R-18G作品显示" label="包含血腥或恶心内容">
+      <template #right-icon>
+        <van-switch :value="currentSETTING.r18g" @input="onR18Change($event, 2)" size="24" />
       </template>
     </van-cell>
   </div>
@@ -46,7 +46,6 @@ export default {
   },
   watch: {
     $route() {
-      this.scroll();
       this.calcCacheSize();
     }
   },
@@ -113,13 +112,6 @@ export default {
         this.$toast.success("清理完成");
       });
     },
-    scroll() {
-      let el = document.querySelector(".app-main");
-      el.scrollTo({
-        top: el.clientHeight,
-        left: 0
-      });
-    },
     ...mapActions(["saveSETTING"])
   },
   filters: {
@@ -138,7 +130,6 @@ export default {
   },
   mounted() {
     this.currentSETTING = JSON.parse(JSON.stringify(this.SETTING));
-    this.scroll();
     this.calcCacheSize();
   },
   updated() {
@@ -154,6 +145,5 @@ export default {
 
 <style lang="stylus" scoped>
 .setting {
-  height: 110vh;
 }
 </style>

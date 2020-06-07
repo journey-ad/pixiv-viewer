@@ -28,6 +28,6 @@ export default {
 .app-base {
   height: 100%;
   width: 100%;
-  overflow: hidden;
+  /* overflow: hidden; */
 }
 </style>

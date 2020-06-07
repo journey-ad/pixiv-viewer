@@ -68,13 +68,18 @@ import _ from "lodash";
 import api from "@/api";
 export default {
   name: "Rank",
-  computed: {
-    dateNum() {
-      return moment(this.date).date();
-    }
+  beforeRouteEnter(to, from, next) {
+    next(vm => {
+      document.querySelector(".app-main").scrollTo(0, vm.scrollTop);
+    });
+  },
+  beforeRouteLeave(to, from, next) {
+    this.scrollTop = document.querySelector(".app-main").scrollTop;
+    next();
   },
   data() {
     return {
+      scrollTop: 0,
       minDate: moment("2007-09-13").toDate(),
       maxDate: moment()
         .subtract(2, "days")
@@ -103,6 +108,11 @@ export default {
         "r18-f": { name: "R-18 - 女性向", io: "day_female_r18", x: true }
       }
     };
+  },
+  computed: {
+    dateNum() {
+      return moment(this.date).date();
+    }
   },
   watch: {
     $route() {
@@ -142,7 +152,7 @@ export default {
         let artList = JSON.parse(JSON.stringify(this.artList));
 
         artList.push(...newList);
-        artList = _.uniqBy(artList, "id")
+        artList = _.uniqBy(artList, "id");
 
         this.artList = artList;
         this.loading = false;
@@ -189,8 +199,9 @@ export default {
 
 <style lang="stylus" scoped>
 .rank {
-  padding-top: 70px;
-  height: 100%;
+  padding-top: 100px;
+  padding-top: env(safe-area-inset-top);
+  // height: 100%;
   box-sizing: border-box;
 
   .loading {
@@ -205,10 +216,10 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    top: 0;
+    top: env(safe-area-inset-top);
     width: 750px;
-    height: 118px;
-    padding: 46px 12px 0 12px;
+    height: 100px;
+    padding: 0 12px;
     box-sizing: border-box;
     background: #fff;
     z-index: 1;
@@ -235,7 +246,7 @@ export default {
     }
 
     ::v-deep .vc-popover-content-wrapper {
-      top: 120px !important;
+      top: 90px !important;
       left: auto !important;
       right: 14px;
       transform: none !important;

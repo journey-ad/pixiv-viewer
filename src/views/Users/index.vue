@@ -162,7 +162,7 @@ export default {
   height: 100%;
 
   .illust-wrap, .user-wrap {
-    height: 100%;
+    height: 100vh;
     overflow-y: scroll;
   }
 }
@@ -173,7 +173,7 @@ export default {
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 200px;
+      height: 300px;
       overflow: hidden;
 
       img {

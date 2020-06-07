@@ -143,11 +143,6 @@ export default {
 
 <style lang="stylus" scoped>
 .image-search {
-  position: absolute;
-  top: 56px;
-  width: 100%;
-  z-index: 1;
-
   .open-dialog {
     position: absolute;
     top: 10px;
@@ -169,7 +164,7 @@ export default {
 
   .container {
     position: absolute;
-    top: 92px;
+    top: 98px;
     width: 100%;
     background: #fff;
 
@@ -212,7 +207,11 @@ export default {
       overflow-y: scroll;
       border-radius: 12px;
 
-      // background: #fff;
+      &::-webkit-scrollbar {
+        width: 0px;
+        background: transparent;
+      }
+
       .result {
         position: relative;
         display: flex;
@@ -264,8 +263,7 @@ export default {
 
         .similarity {
           position: absolute;
-          right: 0;
-          width: 180px;
+          right: 20px;
           height: 155px;
           margin-top: 5px;
           font-family: 'Dosis';
@@ -275,7 +273,6 @@ export default {
           text-align: right;
           color: #555;
           letter-spacing: 2px;
-          padding-right: 20px;
         }
 
         .low {

@@ -6,37 +6,35 @@
         <span class="title">相关作品</span>
       </template>
     </van-cell>
-    <van-pull-refresh v-model="isLoading">
-      <van-list
-        v-model="loading"
-        :finished="finished"
-        finished-text="没有更多了"
-        :error.sync="error"
-        error-text="网络异常，点击重新加载"
-        @load="getRelated()"
-      >
-        <div class="card-box">
-          <div class="column">
-            <ImageCard
-              mode="cover"
-              :artwork="art"
-              @click-card="toArtwork($event)"
-              v-for="art in odd(artList)"
-              :key="art.id"
-            />
-          </div>
-          <div class="column">
-            <ImageCard
-              mode="cover"
-              :artwork="art"
-              @click-card="toArtwork($event)"
-              v-for="art in even(artList)"
-              :key="art.id"
-            />
-          </div>
+    <van-list
+      v-model="loading"
+      :finished="finished"
+      finished-text="没有更多了"
+      :error.sync="error"
+      error-text="网络异常，点击重新加载"
+      @load="getRelated()"
+    >
+      <div class="card-box">
+        <div class="column">
+          <ImageCard
+            mode="cover"
+            :artwork="art"
+            @click-card="toArtwork($event)"
+            v-for="art in odd(artList)"
+            :key="art.id"
+          />
         </div>
-      </van-list>
-    </van-pull-refresh>
+        <div class="column">
+          <ImageCard
+            mode="cover"
+            :artwork="art"
+            @click-card="toArtwork($event)"
+            v-for="art in even(artList)"
+            :key="art.id"
+          />
+        </div>
+      </div>
+    </van-list>
   </div>
 </template>
 
@@ -59,8 +57,7 @@ export default {
       artList: [],
       error: false,
       loading: false,
-      finished: false,
-      isLoading: false
+      finished: false
     };
   },
   methods: {
@@ -80,7 +77,7 @@ export default {
         let artList = JSON.parse(JSON.stringify(this.artList));
 
         artList.push(...newList);
-        artList = _.uniqBy(artList, "id")
+        artList = _.uniqBy(artList, "id");
 
         this.artList = artList;
         this.loading = false;

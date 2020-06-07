@@ -1,11 +1,11 @@
 <template>
-  <div :class="{'safe-area': safeArea}">
+  <div class="main-layout" :class="{'safe-area': safeArea}">
     <div class="app-main">
       <keep-alive>
         <router-view></router-view>
       </keep-alive>
     </div>
-    <Nav></Nav>
+    <Nav v-if="showNav" />
   </div>
 </template>
 
@@ -19,6 +19,10 @@ export default {
     safeArea: {
       type: Boolean,
       default: false
+    },
+    showNav: {
+      type: Boolean,
+      default: true
     }
   },
   components: {
@@ -28,17 +32,26 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-.safe-area {
-  padding-top: 60px;
-  height: calc(100vh - 60px);
+.main-layout {
+  box-sizing: border-box;
+
+  &.safe-area {
+    padding-top: 60px;
+    height: calc(100vh - 60px);
+    padding-top: env(safe-area-inset-top);
+    height: calc(100vh - env(safe-area-inset-top));
+  }
 }
 
 .app-main {
   position: relative;
-  height: calc(100vh - 100px);
-  // height: 100vh;
-  padding-bottom: 100px;
+  height: 100%;
+  // height: calc(100vh - 100px);
+  // padding-bottom: 100px;
+  // height: calc(100vh - env(safe-area-inset-bottom));
+  // padding-bottom: env(safe-area-inset-bottom);
   overflow-y: scroll;
+  box-sizing: border-box;
 
   &::-webkit-scrollbar {
     width: 0;

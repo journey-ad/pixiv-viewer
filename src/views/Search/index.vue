@@ -103,8 +103,18 @@ import { mapState, mapActions } from "vuex";
 import _ from "lodash";
 import api from "@/api";
 export default {
+  beforeRouteEnter(to, from, next) {
+    next(vm => {
+      document.querySelector(".app-main").scrollTo(0, vm.scrollTop);
+    });
+  },
+  beforeRouteLeave(to, from, next) {
+    this.scrollTop = document.querySelector(".app-main").scrollTop;
+    next();
+  },
   data() {
     return {
+      scrollTop: 0,
       keywords__: "",
       keywords: "", // 关键词搜索框真实搜索内容
       keywordsList: [], // 关键词搜索框分词列表（空格分割）
@@ -313,14 +323,12 @@ export default {
 
 .search {
   position: relative;
-  padding-top: 148px;
-  height: calc(100% - 148px);
 
   .search-bar-wrap {
-    position: absolute;
-    top: 0;
+    position: fixed;
+    top: env(safe-area-inset-top);
     width: 100%;
-    min-height: 148px;
+    // min-height: 122px;
     background: #fff;
     z-index: 1;
     transition: all 0.2s;
@@ -347,8 +355,8 @@ export default {
       position: absolute;
       width: 100%;
       height: 128px;
-      top: 26px;
 
+      // top: 26px;
       ::v-deep .van-cell {
         line-height: 32px;
 
@@ -361,7 +369,7 @@ export default {
 
     .search-bar-word {
       position: absolute;
-      top: 66px;
+      top: 40px;
       left: 88px;
       font-size: 0;
       width: 100%;
@@ -409,10 +417,12 @@ export default {
 
     .image-search-mask {
       position: fixed;
-      top: 154px;
+      top: 128px;
+      top: calc(128px + env(safe-area-inset-top));
       width: 100%;
       max-width: 10rem;
-      height: calc(100% - 124px);
+      height: calc(100% - 128px);
+      height: calc(100% - 128px - env(safe-area-inset-top));
       box-sizing: border-box;
       // pointer-events: none;
       background: rgba(0, 0, 0, 0.6);
@@ -451,12 +461,23 @@ export default {
         text-overflow: ellipsis;
       }
     }
+
+    .image-search {
+      position: absolute;
+      top: 28px;
+      width: 100%;
+      z-index: 1;
+    }
   }
 
   .list-wrap {
     position: relative;
-    height: 100%;
-    overflow-y: scroll;
+    min-height: 100vh;
+    // overflow-y: scroll;
+    padding-top: 122px;
+    padding-bottom: 100px;
+    padding-bottom: env(safe-area-inset-bottom);
+    box-sizing: border-box;
 
     >.mask {
       display: none;
@@ -466,10 +487,10 @@ export default {
       >.mask {
         display: block;
         position: fixed;
-        top: 148px;
+        top: 122px;
         width: 100%;
         max-width: 10rem;
-        height: calc(100% - 124px);
+        height: calc(100% - 122px);
         box-sizing: border-box;
         // pointer-events: none;
         background: rgba(0, 0, 0, 0.6);

@@ -35,6 +35,11 @@ const routes = [
             component: Home
           },
           {
+            path: '/search',
+            name: 'Search',
+            component: Search
+          },
+          {
             path: '/rank',
             redirect: '/rank/daily'
           },
@@ -53,18 +58,7 @@ const routes = [
       {
         path: '/',
         component: MainLayout,
-        props: { safeArea: false },
-        children: [
-          {
-            path: '/search',
-            name: 'Search',
-            component: Search
-          }
-        ]
-      },
-      {
-        path: '/',
-        component: MainLayout,
+        props: { showNav: false },
         children: [
           {
             path: '/artwork/:id',

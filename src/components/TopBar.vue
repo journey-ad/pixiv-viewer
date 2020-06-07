@@ -1,9 +1,11 @@
 <template>
-  <van-nav-bar class="top-bar" left-arrow :border="false" @click-left="back">
-    <template #left>
-      <Icon name="left-arrow" scale="2.6"></Icon>
-    </template>
-  </van-nav-bar>
+  <div class="top-bar-wrap">
+    <van-nav-bar class="top-bar" left-arrow :border="false" @click-left="back">
+      <template #left>
+        <Icon name="left-arrow" scale="2.6"></Icon>
+      </template>
+    </van-nav-bar>
+  </div>
 </template>
 
 <script>
@@ -35,19 +37,24 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-.top-bar {
+.top-bar-wrap {
   position: fixed;
   top: 0;
   padding-top: 60px;
   width: 100%;
   max-width: 10rem;
+  height: 160px;
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(#fff, 0));
   z-index: 99;
+}
+
+.top-bar {
+  background: rgba(#000, 0);
 
   svg {
     font-size: 22px;
     color: #fafafa;
-    transform: translateY(10px);
+    filter: drop-shadow(2px 4px 4px rgba(#000, 0.8));
   }
 }
 </style>
