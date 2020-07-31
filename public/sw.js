@@ -58,4 +58,13 @@ workbox.routing.registerRoute(
       ],
     })
 );
-
+workbox.routing.registerRoute(
+    workbox.strategies.staleWhileRevalidate({
+        cacheName: 'jpg-cache',
+    })
+);
+workbox.routing.registerRoute(
+    workbox.strategies.staleWhileRevalidate({
+        cacheName: 'png-cache',
+    })
+);
