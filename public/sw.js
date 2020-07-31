@@ -33,7 +33,7 @@ workbox.routing.registerRoute(
     // Use the cache if it's available
     workbox.strategies.cacheFirst({
       // Use a custom cache name
-      cacheName: 'gravatar-cache',
+      cacheName: 'pixivimg-cache',
       plugins: [
         new workbox.expiration.Plugin({
           // Cache for a maximum of 30 Days
@@ -49,7 +49,7 @@ workbox.routing.registerRoute(
     // Use the cache if it's available
     workbox.strategies.cacheFirst({
       // Use a custom cache name
-      cacheName: 'gravatar-cache',
+      cacheName: 'pixiv-cache',
       plugins: [
         new workbox.expiration.Plugin({
           // Cache for a maximum of 30 Days
