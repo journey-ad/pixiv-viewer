@@ -1,6 +1,6 @@
 <template>
   <div class="setting">
-    <van-cell center title="持久化缓存" :label="size.local | bytes">
+    <van-cell center title="持久化缓存" :label="size.local | bytes【包括ServiceWorker】">
       <template #right-icon>
         <van-button type="primary" size="small" @click="clearCache('local')">清理</van-button>
       </template>
@@ -22,7 +22,7 @@
     </van-cell>
         <van-cell center title="安装PWA应用" label="实现无网络访问">
       <template #right-icon>
-        <a href="/pixiv.mobileconfig">Here</a>
+        <a href="/pixiv.mobileconfig">点此安装</a>
       </template>
     </van-cell>
   </div>
