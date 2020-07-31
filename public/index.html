@@ -46,4 +46,13 @@
   <!-- built files will be auto injected -->
 </body>
 <!--项目地址：https://github.com/journey-ad/pixiv-viewer-->
+  <script>
+// Check that service workers are registered
+if ('serviceWorker' in navigator) {
+  // Use the window load event to keep the page load performant
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js');
+  });
+}
+</script>
 </html>
