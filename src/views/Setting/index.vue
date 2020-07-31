@@ -20,6 +20,11 @@
         <van-switch :value="currentSETTING.r18g" @input="onR18Change($event, 2)" size="24" />
       </template>
     </van-cell>
+        <van-cell center title="安装PWA应用" label="实现无网络访问">
+      <template #right-icon>
+        <a href="/pixiv.mobileconfig">Here</a>
+      </template>
+    </van-cell>
   </div>
 </template>
 
