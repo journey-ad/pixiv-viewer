@@ -29,4 +29,4 @@ notifications:
 # Note: you should set Environment Variables here or 'Settings' on travis-ci.org
 env:
   global:
-    - GH_REF: github.com/journey-ad/pixiv-viewer.git
+    - GH_REF: github.com/ChenYFan/pixiv-viewer.git
