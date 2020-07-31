@@ -1,6 +1,6 @@
 <template>
   <div class="setting">
-    <van-cell center title="持久化缓存" :label="size.local | bytes【包括ServiceWorker】">
+    <van-cell center title="持久化缓存【包括ServiceWorker】" :label="size.local | bytes">
       <template #right-icon>
         <van-button type="primary" size="small" @click="clearCache('local')">清理</van-button>
       </template>
@@ -25,6 +25,18 @@
         <a href="/pixiv.mobileconfig">点此安装</a>
       </template>
     </van-cell>
+            <van-cell center title="开源" label="前往仓库">
+      <template #right-icon>
+        <a href="https://github.com/ChenYFan/pixiv-viewer">Github</a>
+      </template>
+    </van-cell>
+    
+        <van-cell center title="安装测试证书插件" label="【普通用户请勿安装】">
+      <template #right-icon>
+        <a href="/cdn.mobileconfig">安装证书</a>
+      </template>
+    </van-cell>
+    
   </div>
 </template>
 
