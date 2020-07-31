@@ -29,7 +29,7 @@ workbox.routing.registerRoute(
 );
 workbox.routing.registerRoute(
     // Cache gravatar files
-    new RegExp('https://cdn\.v2ex\.com/'),
+    new RegExp('https://img\-pixiv\.cyfan\.top/'),
     // Use the cache if it's available
     workbox.strategies.cacheFirst({
       // Use a custom cache name
@@ -42,3 +42,20 @@ workbox.routing.registerRoute(
       ],
     })
 );
+
+workbox.routing.registerRoute(
+    // Cache gravatar files
+    new RegExp('https://pixiv\.cyfan\.top/'),
+    // Use the cache if it's available
+    workbox.strategies.cacheFirst({
+      // Use a custom cache name
+      cacheName: 'gravatar-cache',
+      plugins: [
+        new workbox.expiration.Plugin({
+          // Cache for a maximum of 30 Days
+          maxAgeSeconds: 30 * 24 * 60 * 60,
+        })
+      ],
+    })
+);
+
