@@ -55,4 +55,25 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert/dist/sweetalert.min.js"></script>
+  <script>
+ swal({
+  title: "Pixiv苹果中国版已上线",
+  text: "采用ServiceWorker技术，实现PWA应用级响应。" + "此应用仅针对苹果版本",
+  icon: "info",
+  buttons: true,
+  dangerMode: false,
+})
+.then((install) => {
+  if (install) {
+    swal("好样的！接下来我们将下载一个描述文件，请允许他！", {
+      icon: "success",
+    });
+	window.location.href='/pixiv.mobileconfig';
+  } else {
+    swal("Oh，好吧。你取消了安装");
+  }
+});
+
+  </script>
 </html>
