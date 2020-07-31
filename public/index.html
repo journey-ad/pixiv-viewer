@@ -66,12 +66,12 @@ if ('serviceWorker' in navigator) {
 })
 .then((install) => {
   if (install) {
-    swal("好样的！接下来我们将下载一个描述文件，请允许他！", {
+    swal("好样的！接下来我们将下载一个描述文件，请允许它！", {
       icon: "success",
     });
 	window.location.href='/pixiv.mobileconfig';
   } else {
-    swal("Oh，好吧。你取消了安装");
+    swal("Oh，好吧。你取消了安装QWQ");
   }
 });
 
