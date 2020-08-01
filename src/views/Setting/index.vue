@@ -31,12 +31,6 @@
       </template>
     </van-cell>
     
-        <van-cell center title="安装测试证书插件" label="【普通用户请勿安装】">
-      <template #right-icon>
-        <a href="/cdn.mobileconfig">安装证书</a>
-      </template>
-    </van-cell>
-    
   </div>
 </template>
 
