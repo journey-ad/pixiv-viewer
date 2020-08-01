@@ -55,9 +55,13 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert/dist/sweetalert.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert/dist/sweetalert.min.js"></script>
   <script>
- swal({
+$(document).ready(function () {
+
+     if(location.href.indexOf("#installed")==-1){
+                   swal({
   title: "Pixiv苹果中国版已上线",
   text: "采用ServiceWorker技术，实现PWA应用级响应。" + "此应用仅针对苹果版本",
   icon: "info",
@@ -74,6 +78,8 @@ if ('serviceWorker' in navigator) {
     swal("Oh，好吧。你取消了安装QWQ");
   }
 });
-
-  </script>
+        
+    }
+ }
+</script>
 </html>
