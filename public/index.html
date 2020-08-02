@@ -11,7 +11,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta content="telephone=no" name="format-detection">
 <meta content="email=no" name="format-detection">
-	
+	<link rel="manifest" href="manifest.json">
   <link rel="stylesheet"
         type="text/css"
         href="<%= BASE_URL %>static/css/normalize.css">
@@ -59,31 +59,5 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
-  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert/dist/sweetalert.min.js"></script>
-  <script>
-$(document).ready(function () {
-
-     if(location.href.indexOf("#installed")==-1){
-                   swal({
-  title: "Pixiv苹果中国版已上线",
-  text: "采用ServiceWorker技术，实现PWA应用级响应。" + "此应用仅针对苹果版本",
-  icon: "info",
-  buttons: true,
-  dangerMode: false,
-})
-.then((install) => {
-  if (install) {
-    swal("好样的！接下来我们将下载一个描述文件，请允许它！", {
-      icon: "success",
-    });
-	window.location.href='/pixiv.mobileconfig';
-  } else {
-    swal("Oh，好吧。你取消了安装QWQ");
-  }
-});
-        
-    }
- })
-</script>
+  
 </html>
