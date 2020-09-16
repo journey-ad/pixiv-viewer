@@ -23,7 +23,7 @@ branches:
 
 notifications:
   email:
-    - ad@imjad.cn
+    - name@email.com # 请把这行改成你的邮箱地址，不然你每次构建我都会收到邮件
   on_failure: always
 
 # Note: you should set Environment Variables here or 'Settings' on travis-ci.org
