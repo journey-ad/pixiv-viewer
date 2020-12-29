@@ -1,5 +1,6 @@
 # pixiv-viewer
 [![Build Status](https://www.travis-ci.org/journey-ad/pixiv-viewer.svg?branch=master)](https://www.travis-ci.org/journey-ad/pixiv-viewer)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fjourney-ad%2Fpixiv-viewer.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fjourney-ad%2Fpixiv-viewer?ref=badge_shield)
 
 [DEMO](https://journey-ad.github.io/pixiv-viewer)
 
@@ -71,3 +72,5 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ## LICENSE
 [![MIT License Copyright (c) 2020 Jad](https://img.shields.io/github/license/journey-ad/pixiv-viewer)](https://github.com/journey-ad/pixiv-viewer/blob/master/LICENSE)
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fjourney-ad%2Fpixiv-viewer.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fjourney-ad%2Fpixiv-viewer?ref=badge_large)
