@@ -179,7 +179,7 @@ const api = {
     let relatedList
     if (!SessionStorage.has(`relatedList_${id}_p${page}`)) {
 
-      let res = await get('/v2/', {
+      let res = await get('/pixiv/', {
         type: 'related',
         id,
         page
@@ -224,7 +224,7 @@ const api = {
     date = moment(date).format('YYYY-MM-DD')
     if (!SessionStorage.has(`rankList_${mode}_${date}_${page}`)) {
 
-      let res = await get('/v2/', {
+      let res = await get('/pixiv/', {
         type: 'rank',
         mode,
         page,
@@ -268,7 +268,7 @@ const api = {
     let searchList, key = `searchList_${Base64.encode(word)}_${page}`
     if (!SessionStorage.has(key)) {
 
-      let res = await get('/v2/', {
+      let res = await get('/pixiv/', {
         type: 'search',
         word,
         page
@@ -310,7 +310,7 @@ const api = {
     let artwork
     if (!LocalStorage.has(`artwork_${id}`)) {
 
-      let res = await get('/v2/', {
+      let res = await get('/pixiv/', {
         type: 'illust',
         id
       })
@@ -349,7 +349,7 @@ const api = {
     let ugoira
     if (!LocalStorage.has(`ugoira_${id}`)) {
 
-      let res = await get('/v2/', {
+      let res = await get('/pixiv/', {
         type: 'ugoira_metadata',
         id
       })
@@ -383,7 +383,7 @@ const api = {
     let memberInfo
     if (!LocalStorage.has(`memberInfo_${id}`)) {
 
-      let res = await get('/v2/', {
+      let res = await get('/pixiv/', {
         type: 'member',
         id
       })
@@ -415,7 +415,7 @@ const api = {
     let memberArtwork
     if (!LocalStorage.has(`memberArtwork_${id}_p${page}`)) {
 
-      let res = await get('/v2/', {
+      let res = await get('/pixiv/', {
         type: 'member_illust',
         id,
         page
@@ -457,7 +457,7 @@ const api = {
     let memberFavorite = {}
     if (!LocalStorage.has(`memberFavorite_${id}_m${max_bookmark_id}`)) {
 
-      let res = await get('/v2/', {
+      let res = await get('/pixiv/', {
         type: 'favorite',
         id,
         max_bookmark_id
@@ -496,7 +496,7 @@ const api = {
     let tags
     if (!LocalStorage.has(`tags`)) {
 
-      let res = await get('/v2/', {
+      let res = await get('/pixiv/', {
         type: 'tags'
       })
 

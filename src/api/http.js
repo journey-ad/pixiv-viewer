@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const baseURL = 'https://api.imjad.cn/pixiv/'
+const baseURL = 'https://hibiapi.getloli.com/'
 
 axios.defaults.baseURL = baseURL
 axios.defaults.timeout = 10000
