@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@vant/touch-emulator": "^1.2.0",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "core-js": "^3.6.4",
     "file-saver": "^2.0.2",
     "gif.js": "^0.2.0",
