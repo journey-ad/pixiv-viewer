@@ -1,0 +1,15 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><link rel="icon" href="./favicon.ico"><title>pixiv-viewer</title><link rel="stylesheet" type="text/css" href="./static/css/normalize.css"><link rel="stylesheet" type="text/css" href="./static/css/flexible.css"><script src="./static/js/flexible.js"></script><script>document.addEventListener('plusready', function () {
+      plus.navigator.setStatusBarStyle('dark');
+      plus.navigator.setFullscreen(false);
+
+      var webview = plus.webview.currentWebview();
+      plus.key.addEventListener('backbutton', function () {
+        webview.canBack(function (e) {
+          if (e.canBack) {
+            webview.back();
+          } else {
+            //webview.close(); //hide,quit
+          }
+        })
+      });
+    });</script><link href="./js/about.9970da35.js" rel="prefetch"><link href="./css/app.02c86120.css" rel="preload" as="style"><link href="./css/chunk-vendors.4cce11f9.css" rel="preload" as="style"><link href="./js/app.adbb2204.js" rel="preload" as="script"><link href="./js/chunk-vendors.0ddbb536.js" rel="preload" as="script"><link href="./css/chunk-vendors.4cce11f9.css" rel="stylesheet"><link href="./css/app.02c86120.css" rel="stylesheet"></head><body><noscript><strong>We're sorry but pixiv-viewer doesn't work properly without JavaScript enabled. Please enable it to continue.</strong></noscript><div id="app"></div><script src="./js/chunk-vendors.0ddbb536.js"></script><script src="./js/app.adbb2204.js"></script></body></html>
