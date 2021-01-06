@@ -1,5 +1,7 @@
+<p align="center"><img src="https://count.getloli.com/get/@pixiv-viewer.github" alt="pixiv-viewer"></p>
+
 # pixiv-viewer
-[![Build Status](https://www.travis-ci.org/journey-ad/pixiv-viewer.svg?branch=master)](https://www.travis-ci.org/journey-ad/pixiv-viewer)
+![Github CI](https://github.com/journey-ad/pixiv-viewer/workflows/Github%20CI/badge.svg?branch=master)
 
 [DEMO](https://journey-ad.github.io/pixiv-viewer)
 
