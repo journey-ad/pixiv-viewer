@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const baseURL = 'https://hibiapi.getloli.com/'
+const baseURL = 'https://api.obfs.dev/api'
 
 axios.defaults.baseURL = baseURL
 axios.defaults.timeout = 10000
