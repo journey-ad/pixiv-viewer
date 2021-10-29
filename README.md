@@ -5,7 +5,7 @@
 
 [DEMO](https://journey-ad.github.io/pixiv-viewer)
 
-[APK(5+)](https://github.com/journey-ad/pixiv-viewer/raw/master/pics/pixiv_viewer_0607231648.apk)
+[APK(5+)](https://github.com/journey-ad/pixiv-viewer/raw/master/pics/Pixiv-Viewer.apk)
 
 ## Features
 - [x] 基础页面
