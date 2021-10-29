@@ -16,7 +16,7 @@ const isSupportWebP = (() => {
 })();
 
 const imgProxy = url => {
-  let result = url.replace(/i.pximg.net/g, 'i.pixiv.cat')
+  let result = url.replace(/i.pximg.net/g, 'i.pixiv.re')
 
   if (!isSupportWebP) {
     result = result.replace(/_10_webp/g, '_70')
