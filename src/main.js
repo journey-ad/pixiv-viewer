@@ -8,12 +8,16 @@ import { Toast, Lazyload, ImagePreview } from 'vant';
 import '@vant/touch-emulator';
 import VueAwesomeSwiper from 'vue-awesome-swiper'
 import VCalendar from 'v-calendar';
+import waterfall from 'vue-waterfall2'
 
 import 'swiper/css/swiper.css'
 import '@/assets/css/base.styl'
+
 // import '@/assets/css/iconfont/iconfont.js'
 
 import './polyfill'
+
+import './registerServiceWorker'
 
 Vue.use(Moment);
 Vue.use(Toast);
@@ -24,10 +28,15 @@ Vue.use(Lazyload, {
 Vue.use(ImagePreview);
 Vue.use(VueAwesomeSwiper)
 Vue.use(VCalendar)
+Vue.use(waterfall)
 
 Vue.component('Icon', Icon)
 
-Vue.config.productionTip = false
+Vue.config.productionTip = true
+
+document.addEventListener('gesturestart', function (e) {
+  e.preventDefault();
+});
 
 new Vue({
   router,

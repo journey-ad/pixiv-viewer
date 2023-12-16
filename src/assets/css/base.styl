@@ -11,6 +11,16 @@ html, body {
   color: #333;
   overscroll-behavior: none;
   user-select: none;
+  height: 100%;
+  touch-action: pan-x pan-y;
+}
+
+html {
+  position: relative;
+  overflow-y: scroll;
+  box-sizing: border-box;
+  overscroll-behavior: none;
+  scroll-behavior: smooth;
 }
 
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700&display=swap');
@@ -33,12 +43,74 @@ html, body {
 }
 
 .image-preview {
-  background: #333;
+  background: #fff;
+}
+
+.van-image-preview__index {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 0 0 auto;
+  font-weight: bold;
+  height: 20px;
+  min-width: 20px;
+  padding: 0px 6px;
+  background: rgba(0, 0, 0, 0.32);
+  border-radius: 10px;
+  font-size: 10px;
+  line-height: 10px;
+  text-shadow: none;
+}
+
+.van-overflow-hidden {
+  &::-webkit-scrollbar {
+    display: none;
+    width: 0;
+  }
+}
+
+.van-image-preview {
+  &[data-scroll] {
+    .van-image-preview__image {
+      flex-flow: column;
+
+      .van-image__img {
+        width = 'min(100%, 690px)';
+        width: unquote(width);
+        height: auto;
+      }
+    }
+  }
+
+  .van-image-preview__image {
+    display: flex;
+    align-items: center;
+    min-width: 100%;
+    min-height: 100%;
+    inset: 0px;
+    overflow: auto;
+
+    .van-image__img {
+      cursor: zoom-out;
+
+      &:active {
+        cursor: grab;
+      }
+    }
+  }
 }
 
 .censored {
   filter: blur(40px);
   position: relative;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.18s;
+}
+
+.fade-enter, .fade-leave-to {
+  opacity: 0;
 }
 
 @font-face {

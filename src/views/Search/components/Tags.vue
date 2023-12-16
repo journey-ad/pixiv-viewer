@@ -1,6 +1,6 @@
 <template>
   <div class="tags">
-    <div class="top" v-if="tags.length>0">
+    <div class="top" v-if="tags.length > 0">
       <div class="tag" @click.stop="search(tags[0].name)">
         <img :src="tags[0].pic" alt />
         <div class="meta">
@@ -8,30 +8,48 @@
             <div
               class="name"
               v-if="tags[0].name"
-              :class="{s: tags[0].name.length>=10, m: tags[0].name.length>=6}"
-            >#{{tags[0].name}}</div>
+              :class="{
+                s: tags[0].name.length >= 10,
+                m: tags[0].name.length >= 6,
+              }"
+            >
+              #{{ tags[0].name }}
+            </div>
             <div
               class="tname"
               v-if="tags[0].tname"
-              :class="{s: tags[0].tname.length>=10, m: tags[0].tname.length>=6}"
-            >{{tags[0].tname}}</div>
+              :class="{
+                s: tags[0].tname.length >= 10,
+                m: tags[0].tname.length >= 6,
+              }"
+            >
+              {{ tags[0].tname }}
+            </div>
           </div>
         </div>
       </div>
     </div>
-    <div class="bottom" v-if="tags.length>3">
+    <div class="bottom" v-if="tags.length > 3">
       <div class="row">
         <div
           class="tag"
-          v-for="(tag,index) in tags.slice(1)"
+          v-for="(tag, index) in tags.slice(1)"
           :key="index"
           @click.stop="search(tag.name)"
         >
           <img :src="tag.pic" alt />
           <div class="meta">
             <div class="content">
-              <div class="name" v-if="tag.name" :class="[getLength(tag.name)]">#{{tag.name}}</div>
-              <div class="tname" v-if="tag.tname" :class="[getLength(tag.tname)]">{{tag.tname}}</div>
+              <div class="name" v-if="tag.name" :class="[getLength(tag.name)]">
+                #{{ tag.name }}
+              </div>
+              <div
+                class="tname"
+                v-if="tag.tname"
+                :class="[getLength(tag.tname)]"
+              >
+                {{ tag.tname }}
+              </div>
             </div>
           </div>
         </div>
@@ -45,7 +63,7 @@ import api from "@/api";
 export default {
   data() {
     return {
-      tags: []
+      tags: [],
     };
   },
   methods: {
@@ -58,7 +76,7 @@ export default {
         this.tags = res.data;
       } else {
         this.$toast({
-          message: res.msg
+          message: res.msg,
         });
         this.loading = false;
         this.error = true;
@@ -72,12 +90,12 @@ export default {
         return "m";
       }
       return "l";
-    }
+    },
   },
   mounted() {
     this.getTags();
   },
-  components: {}
+  components: {},
 };
 </script>
 
@@ -90,12 +108,14 @@ export default {
     position: relative;
     float: left;
     width: 33.3%;
+    height: 33.33vw;
 
     img {
       display: block;
       width: 100%;
       height: 100%;
       object-fit: cover;
+      aspect-ratio: 1 / 1;
     }
 
     .meta {

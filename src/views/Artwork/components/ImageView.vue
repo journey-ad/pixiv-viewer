@@ -1,7 +1,11 @@
 <template>
   <div
     class="image-view"
-    :class="{shrink:isShrink, loaded: artwork.images, censored: isCensored(artwork)}"
+    :class="{
+      shrink: isShrink,
+      loaded: artwork.images,
+      censored: isCensored(artwork),
+    }"
     @click="showFull"
     ref="view"
   >
@@ -9,26 +13,39 @@
       class="image-box"
       v-for="(url, index) in artwork.images"
       :key="index"
-      :style="index===0 ? {width: `${displayWidth}px`, height: `${displayWidth / (artwork.width / artwork.height)}px`} : null"
+      :style="
+        index === 0
+          ? {
+              width: `${displayWidth}px`,
+              height: `${displayWidth / (artwork.width / artwork.height)}px`,
+            }
+          : null
+      "
     >
       <!-- :style="{height: `${(375/artwork.width*artwork.height).toFixed(2)}px`}" -->
       <img
         v-if="lazy"
         v-lazy="url.l"
-        :alt="`${artwork.title} - Page ${index+1}`"
+        :alt="`${artwork.title} - Page ${index + 1}`"
         class="image"
         @click.stop="view(index, isCensored(artwork))"
       />
       <img
         v-else
         :src="url.l"
-        :alt="`${artwork.title} - Page ${index+1}`"
+        :alt="`${artwork.title} - Page ${index + 1}`"
         class="image"
-        :style="{width: displayWidth, height: ((artwork.width / displayWidth) * artwork.height) * (artwork.width / artwork.height)}"
+        :style="{
+          width: displayWidth,
+          height:
+            (artwork.width / displayWidth) *
+            artwork.height *
+            (artwork.width / artwork.height),
+        }"
         @click.stop="view(index, isCensored(artwork))"
       />
       <canvas
-        v-if="artwork.type==='ugoira'"
+        v-if="artwork.type === 'ugoira'"
         class="ugoira"
         :width="artwork.width"
         :height="artwork.height"
@@ -38,17 +55,29 @@
       ></canvas>
     </div>
     <Icon v-if="isShrink" class="dropdown" name="dropdown" scale="4"></Icon>
-    <div v-if="artwork.type==='ugoira'" class="ugoira-controls">
+    <div v-if="artwork.type === 'ugoira'" class="ugoira-controls">
       <div v-if="ugoiraPlaying" class="btn-pause" @click="drawCanvas('pause')">
         <Icon class="pause" name="pause" scale="6"></Icon>
       </div>
       <div v-else class="btn-play" @click="playUgoira()">
         <Icon class="play" name="play" scale="6"></Icon>
       </div>
-      <div class="progress-bar" v-if="progressShow" :style="{width: `${progress*100}%`}">
+      <div
+        class="progress-bar"
+        v-if="progressShow"
+        :style="{ width: `${progress * 100}%` }"
+      >
         <div class="background"></div>
       </div>
     </div>
+
+    <van-image-preview
+      :data-scroll="isScroll"
+      :start-position="curView"
+      :images="original"
+      v-model="show"
+    >
+    </van-image-preview>
   </div>
 </template>
 
@@ -67,27 +96,34 @@ export default {
       if (val.images && val.images.length > 0) {
         this.init();
       }
-    }
+    },
   },
   props: {
     artwork: {
       type: Object,
-      required: true
+      required: true,
     },
     lazy: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
   },
   computed: {
     original() {
-      return this.artwork.images.map(url => url.o);
+      if (!this.artwork?.images?.length) return [];
+
+      return this.artwork.images.map((url) => url.o);
+    },
+    isScroll() {
+      return this.artwork.height / this.artwork.width > 4;
     },
     ...mapState(["$swiper"]),
-    ...mapGetters(["isCensored"])
+    ...mapGetters(["isCensored"]),
   },
   data() {
     return {
+      show: false,
+      curView: 0,
       displayWidth: 0,
       displayHeight: 0,
       isShrink: false,
@@ -95,7 +131,7 @@ export default {
       ugoiraPlaying: false,
       curIndex: 0,
       progressShow: false,
-      progress: 0
+      progress: 0,
     };
   },
   methods: {
@@ -103,7 +139,7 @@ export default {
       if (censored) {
         this.$toast({
           message: "根据当前设置，此内容将不予显示",
-          icon: require("@/svg/ban-view.svg")
+          icon: require("@/svg/ban-view.svg"),
         });
       } else {
         if (window.plus) {
@@ -117,35 +153,37 @@ export default {
           }
           plus.nativeUI.previewImage(obj, {
             current: x,
-            onLongPress: function(e) {
+            onLongPress: function (e) {
               // 预览界面长按显示ActionSheet
               var bts = [{ title: "保存至相册" }];
               plus.nativeUI.actionSheet(
                 { title: "选择操作", cancel: "取消", buttons: bts },
-                function(t) {
+                function (t) {
                   if (t.index == 1) {
                     //e.url e.path
                     plus.gallery.save(
                       e.url,
-                      function() {
+                      function () {
                         plus.nativeUI.toast("保存成功");
                       },
-                      function() {
+                      function () {
                         plus.nativeUI.toast("保存失败");
                       }
                     );
                   }
                 }
               );
-            }
+            },
           });
         } else {
-          ImagePreview({
-            className: "image-preview",
-            images: this.original,
-            startPosition: index,
-            closeOnPopstate: true
-          });
+          // ImagePreview({
+          //   className: "image-preview",
+          //   images: this.original,
+          //   startPosition: index,
+          //   closeOnPopstate: true,
+          // });
+          this.curView = index;
+          this.show = true;
         }
       }
     },
@@ -158,7 +196,7 @@ export default {
         return Object.freeze(res.data);
       } else {
         this.$toast({
-          message: res.msg
+          message: res.msg,
         });
       }
     },
@@ -172,13 +210,13 @@ export default {
 
       const ugoira = await this.ugoiraMetadata();
       const frames = {};
-      ugoira.frames.forEach(frame => {
+      ugoira.frames.forEach((frame) => {
         frames[frame.file] = frame;
       });
 
       this.ugoira = {
         frames,
-        zip: ugoira.zip
+        zip: ugoira.zip,
       };
       // console.log(this.ugoira);
       this.progressShow = true;
@@ -186,23 +224,23 @@ export default {
         .get(ugoira.zip, {
           responseType: "blob",
           timeout: 1000 * 30,
-          onDownloadProgress: progress => {
+          onDownloadProgress: (progress) => {
             this.progress = progress.loaded / progress.total;
-          }
+          },
         })
-        .then(resp => {
+        .then((resp) => {
           const jszip = new JSZip();
-          jszip.loadAsync(resp.data).then(zip => {
+          jszip.loadAsync(resp.data).then((zip) => {
             let index = 0;
             const files = Object.keys(zip.files);
-            files.forEach(name => {
+            files.forEach((name) => {
               zip
                 .file(name)
                 .async("blob")
-                .then(async blob => {
+                .then(async (blob) => {
                   return {
                     blob: blob,
-                    bmp: await createImageBitmap(blob)
+                    bmp: await createImageBitmap(blob),
                   };
                 })
                 .then(({ blob, bmp }) => {
@@ -222,10 +260,10 @@ export default {
             });
           });
         })
-        .catch(error => {
+        .catch((error) => {
           this.resetUgoira();
           this.$toast({
-            message: error.message
+            message: error.message,
           });
         });
     },
@@ -274,7 +312,7 @@ export default {
       if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
         this.$toast({
           message: "iOS 设备暂不支持 WebM 格式下载",
-          icon: require("@/svg/error.svg")
+          icon: require("@/svg/error.svg"),
         });
         return;
       }
@@ -287,7 +325,7 @@ export default {
       const ctx = cacheCanvas.getContext("2d");
 
       const encoder = new Whammy.Video();
-      Object.values(this.ugoira.frames).forEach(frame => {
+      Object.values(this.ugoira.frames).forEach((frame) => {
         ctx.clearRect(0, 0, width, height);
         ctx.drawImage(frame.bmp, 0, 0, width, height);
         encoder.add(ctx, frame.delay);
@@ -320,14 +358,14 @@ export default {
         quality: 10,
         width,
         height,
-        workerScript: "./static/js/gif.worker.js"
+        workerScript: "./static/js/gif.worker.js",
       });
-      Object.values(images).forEach(frame => {
+      Object.values(images).forEach((frame) => {
         ctx.clearRect(0, 0, width, height);
         ctx.drawImage(frame.bmp, 0, 0, width, height);
         gif.addFrame(ctx, { copy: true, delay: frame.delay * offset });
       });
-      gif.on("finished", blob => {
+      gif.on("finished", (blob) => {
         FileSaver.saveAs(
           blob,
           `[${this.artwork.author.name}] ${this.artwork.title} - ${this.artwork.id}.gif`
@@ -369,10 +407,11 @@ export default {
       this.progress = 0;
       this.progressShow = false;
     },
-    init() {
-      this.resetUgoira();
+    resize() {
       this.$nextTick(() => {
-        this.displayWidth = document.getElementById('app').getBoundingClientRect().width;
+        this.displayWidth = document
+          .getElementById("app")
+          .getBoundingClientRect().width;
         this.displayHeight =
           this.displayWidth / (this.artwork.width / this.artwork.height);
         setTimeout(() => {
@@ -383,14 +422,25 @@ export default {
           }
         }, 0);
       });
-    }
+    },
+    init() {
+      this.resetUgoira();
+      this.resize();
+    },
   },
   mounted() {
     this.init();
+    window.addEventListener("resize", this.resize);
+  },
+  beforeUnmount() {
+    window.removeEventListener("resize", this.resize);
   },
   deactivated() {
     this.resetUgoira();
-  }
+  },
+  components: {
+    [ImagePreview.Component.name]: ImagePreview.Component,
+  },
 };
 </script>
 
@@ -415,11 +465,11 @@ export default {
     &::after {
       content: '';
       position: absolute;
-      top: 0;
+      top: 40%;
       right: 0;
       bottom: 0;
       left: 0;
-      background: linear-gradient(to top, rgb(255, 255, 255), rgba(#fff, 0));
+      background: linear-gradient(to top, #fff, rgba(#fff, 0));
     }
 
     .dropdown {
@@ -447,6 +497,8 @@ export default {
   .image-box {
     position: relative;
     background: #fafafa;
+    max-height: 100vh;
+    margin-bottom: 20px;
 
     &:nth-of-type(n+2) {
       min-height: 600px;
@@ -457,9 +509,11 @@ export default {
       display: block;
       width: 100%;
       height: 100%;
+      max-height: 100vh;
       // min-height: 600px;
       // max-height: 1000px;
-      object-fit: cover;
+      object-fit: contain;
+      cursor: zoom-in;
 
       &[lazy='loading'] {
         position: absolute;
@@ -477,6 +531,8 @@ export default {
       top: 0;
       left: 0;
       width: 100%;
+      height: 100%;
+      object-fit: contain;
       // background: #fff;
     }
   }

@@ -14,25 +14,24 @@
       error-text="网络异常，点击重新加载"
       @load="getRelated()"
     >
-      <div class="card-box">
-        <div class="column">
-          <ImageCard
-            mode="cover"
-            :artwork="art"
-            @click-card="toArtwork($event)"
-            v-for="art in odd(artList)"
+      <div class="card-box__wrapper" ref="cardBox">
+        <waterfall
+          :col="col"
+          :width="itemWidth"
+          :gutterWidth="0"
+          :data="artList"
+        >
+          <router-link
+            :to="{
+              name: 'Artwork',
+              params: { id: art.id, list: artList },
+            }"
+            v-for="art in artList"
             :key="art.id"
-          />
-        </div>
-        <div class="column">
-          <ImageCard
-            mode="cover"
-            :artwork="art"
-            @click-card="toArtwork($event)"
-            v-for="art in even(artList)"
-            :key="art.id"
-          />
-        </div>
+          >
+            <ImageCard mode="cover" :artwork="art" :column="col" />
+          </router-link>
+        </waterfall>
       </div>
     </van-list>
   </div>
@@ -48,16 +47,18 @@ export default {
   props: {
     artwork: {
       type: Object,
-      required: true
-    }
+      required: true,
+    },
   },
   data() {
     return {
+      col: 2,
+      itemWidth: 0,
       curPage: 1,
       artList: [],
       error: false,
       loading: false,
-      finished: false
+      finished: false,
     };
   },
   methods: {
@@ -68,7 +69,7 @@ export default {
       this.curPage = 1;
       this.artList = [];
     },
-    getRelated: _.throttle(async function() {
+    getRelated: _.throttle(async function () {
       if (!this.artwork.id) return;
       let newList;
       let res = await api.getRelated(this.artwork.id, this.curPage);
@@ -76,37 +77,54 @@ export default {
         newList = res.data;
         let artList = JSON.parse(JSON.stringify(this.artList));
 
-        artList.push(...newList);
+        artList = artList.concat(newList);
         artList = _.uniqBy(artList, "id");
 
         this.artList = artList;
         this.loading = false;
         this.curPage++;
         if (this.curPage > 5) this.finished = true;
+        this.$nextTick(this.resize);
       } else {
         this.$toast({
-          message: res.msg
+          message: res.msg,
         });
         this.loading = false;
         this.error = true;
       }
     }, 5000),
-    odd(list) {
-      return list.filter((_, index) => (index + 1) % 2);
-    },
-    even(list) {
-      return list.filter((_, index) => !((index + 1) % 2));
-    },
     toArtwork(id) {
       this.$router.push({
         name: "Artwork",
-        params: { id, list: this.artList }
+        params: { id, list: this.artList },
       });
-    }
+    },
+    resize() {
+      const clientWidth = document.documentElement.clientWidth;
+
+      if (clientWidth < 375) {
+        this.col = 1;
+      } else if (clientWidth <= 768) {
+        this.col = 2;
+      } else if (clientWidth <= 1600) {
+        this.col = 3;
+      } else {
+        this.col = 4;
+      }
+
+      this.itemWidth = Math.floor(
+        this.$refs.cardBox.firstChild.clientWidth / this.col
+      );
+    },
   },
   mounted() {
     this.reset();
     this.getRelated();
+
+    window.addEventListener("resize", this.resize);
+  },
+  beforeUnmount() {
+    window.removeEventListener("resize", this.resize);
   },
   components: {
     [Cell.name]: Cell,
@@ -115,15 +133,15 @@ export default {
     [Icon.name]: Icon,
     [List.name]: List,
     [PullRefresh.name]: PullRefresh,
-    ImageCard
-  }
+    ImageCard,
+  },
 };
 </script>
 
 <style lang="stylus" scoped>
 .related {
   .cell {
-    padding: 0 8px 20px 8px;
+    padding: 10px 8px 10px 8px;
   }
 
   .card-box {
@@ -210,17 +228,16 @@ export default {
 }
 
 .related {
-  .card-box {
-    display: flex;
-    flex-direction: row;
+  .card-box__wrapper {
+    .card-box {
+      display: flex;
+      flex-direction: row;
+    }
 
-    .column {
-      width: 50%;
-
-      .image-card {
-        max-height: 360px;
-        margin: 4px 2px;
-      }
+    .image-card {
+      max-height: 500px;
+      margin: 14px 6px;
+      border: 1px solid #ebebeb;
     }
   }
 }

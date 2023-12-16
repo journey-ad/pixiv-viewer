@@ -12,9 +12,10 @@ export default new Vuex.Store({
     $swiper: null,
     searchHistory: LocalStorage.get('__PIXIV_searchHistory', []),
     SETTING: LocalStorage.get('__PIXIV_SETTING', {
+      api: "https://hibiapi.journeyad.repl.co/api/",
       r18: false,
       r18g: false
-    })
+    }),
   },
   getters: {
     currentId: state => state.galleryList[state.currentIndex] ? state.galleryList[state.currentIndex].id : -1,

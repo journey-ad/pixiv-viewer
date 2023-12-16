@@ -10,11 +10,14 @@
 
 <script>
 import { NavBar } from "vant";
+
+let backCount = 0; // 连续返回次数
+
 export default {
   props: {
     action: {
-      type: Function
-    }
+      type: Function,
+    },
   },
   methods: {
     back() {
@@ -26,13 +29,21 @@ export default {
       if (history.length <= 2) {
         this.$router.push({ name: "Home" });
       } else {
+        if (backCount >= 5) {
+          // 连续返回5次后直接返回首页
+          this.$router.replace({ name: "Home" });
+          backCount = 0;
+          return;
+        }
+
         this.$router.back();
+        backCount++;
       }
-    }
+    },
   },
   components: {
-    [NavBar.name]: NavBar
-  }
+    [NavBar.name]: NavBar,
+  },
 };
 </script>
 
@@ -40,9 +51,9 @@ export default {
 .top-bar-wrap {
   position: fixed;
   top: 0;
-  padding-top: 60px;
+  left: 0;
+  padding-top: 40px;
   width: 100%;
-  max-width: 10rem;
   height: 160px;
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(#fff, 0));
   z-index: 99;

@@ -1,5 +1,9 @@
 <template>
-  <div class="main-layout" :class="{'safe-area': safeArea}">
+  <div
+    class="main-layout"
+    :class="{ 'safe-area': safeArea }"
+    :style="{ height: '100%' }"
+  >
     <div class="app-main">
       <keep-alive>
         <router-view></router-view>
@@ -18,21 +22,30 @@ export default {
   props: {
     safeArea: {
       type: Boolean,
-      default: false
+      default: false,
     },
     showNav: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
+  },
+  watch: {
+    showNav: {
+      handler(val) {
+        this.$root.$el.classList.toggle("show-nav", val);
+      },
+      immediate: true,
+    },
   },
   components: {
-    Nav
-  }
+    Nav,
+  },
 };
 </script>
 
 <style lang="stylus" scoped>
 .main-layout {
+  height: 100%;
   box-sizing: border-box;
 
   &.safe-area {
@@ -45,14 +58,11 @@ export default {
 
 .app-main {
   position: relative;
-  height: 100%;
+
   // height: calc(100vh - 100px);
   // padding-bottom: 100px;
   // height: calc(100vh - env(safe-area-inset-bottom));
   // padding-bottom: env(safe-area-inset-bottom);
-  overflow-y: scroll;
-  box-sizing: border-box;
-
   &::-webkit-scrollbar {
     width: 0;
   }

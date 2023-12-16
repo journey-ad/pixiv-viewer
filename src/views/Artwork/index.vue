@@ -5,15 +5,25 @@
       <ImageView
         :artwork="artwork"
         :lazy="true"
-        @open-download="ugoiraDownloadPanelShow=true"
+        @open-download="ugoiraDownloadPanelShow = true"
         ref="imgView"
       />
-      <van-skeleton class="skeleton" avatar :row="3" :avatar-size="'42px'" :loading="loading">
+      <van-skeleton
+        class="skeleton"
+        avatar
+        :row="3"
+        :avatar-size="'42px'"
+        :loading="loading"
+      >
         <Meta :artwork="artwork" />
       </van-skeleton>
       <van-divider />
       <keep-alive>
-        <AuthorCard v-if="artwork.author" :id="artwork.author.id" :key="artwork.id" />
+        <AuthorCard
+          v-if="artwork.author"
+          :id="artwork.author.id"
+          :key="artwork.id"
+        />
       </keep-alive>
       <van-divider />
       <keep-alive>
@@ -51,7 +61,7 @@ export default {
       ) {
         this.init();
       }
-    }
+    },
   },
   data() {
     return {
@@ -64,29 +74,31 @@ export default {
         // currentPage: 1,
         loop: true,
         thresholdTime: 5000,
-        thresholdDistance: 150
+        thresholdDistance: 150,
       },
       ugoiraDownloadPanelShow: false,
       ugoiraDownloadPanelActions: [
         { name: "ZIP", subname: "原始序列帧归档文件" },
         { name: "GIF", subname: "低画质，兼容性最佳" },
-        { name: "WebM", subname: "高画质，兼容性差" } // chrome only
-      ]
+        { name: "WebM", subname: "高画质，兼容性差" }, // chrome only
+      ],
     };
   },
   computed: {
     ...mapState(["galleryList", "currentIndex", "$swiper"]),
-    ...mapGetters(["currentId", "isCensored"])
+    ...mapGetters(["currentId", "isCensored"]),
   },
   methods: {
     init() {
-      document
-        .querySelector(".app-main")
-        .scrollTo({ top: 0, behavior: "smooth" });
+      document.documentElement.scrollTo({ top: 0, behavior: "smooth" });
       this.loading = true;
       let id = +this.$route.params.id;
       this.artwork = {};
       this.getArtwork(id);
+
+      if(this.$route.length > 2) {
+        
+      }
     },
     async getArtwork(id) {
       // console.log(id);
@@ -98,7 +110,7 @@ export default {
         if (this.isCensored(this.artwork)) {
           this.$toast({
             message: "根据当前设置，此内容将不予显示",
-            icon: require("@/svg/ban-view.svg")
+            icon: require("@/svg/ban-view.svg"),
           });
           setTimeout(() => {
             // this.$router.back();
@@ -107,7 +119,7 @@ export default {
       } else {
         this.$toast({
           message: res.msg,
-          icon: require("@/svg/error.svg")
+          icon: require("@/svg/error.svg"),
         });
         setTimeout(() => {
           this.$router.back();
@@ -116,7 +128,7 @@ export default {
     },
     onUgoiraDownloadPanelSelect(item) {
       this.$refs.imgView.download(item.name);
-    }
+    },
   },
   mounted() {
     this.init();
@@ -130,8 +142,8 @@ export default {
     Related,
     [Divider.name]: Divider,
     [Skeleton.name]: Skeleton,
-    [ActionSheet.name]: ActionSheet
-  }
+    [ActionSheet.name]: ActionSheet,
+  },
 };
 </script>
 

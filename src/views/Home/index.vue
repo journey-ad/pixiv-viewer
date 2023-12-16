@@ -12,22 +12,22 @@ export default {
   name: "Home",
   data() {
     return {
-      scrollTop: 0
+      scrollTop: 0,
     };
   },
   beforeRouteEnter(to, from, next) {
-    next(vm => {
-      document.querySelector(".app-main").scrollTo(0, vm.scrollTop);
+    next((vm) => {
+      document.documentElement.scrollTo(0, vm.scrollTop);
     });
   },
   beforeRouteLeave(to, from, next) {
-    this.scrollTop = document.querySelector(".app-main").scrollTop;
+    this.scrollTop = document.documentElement.scrollTop;
     next();
   },
   components: {
     RankCard,
-    Daily
-  }
+    Daily,
+  },
 };
 </script>
 

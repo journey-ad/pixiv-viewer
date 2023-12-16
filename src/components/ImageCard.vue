@@ -2,7 +2,7 @@
   <div
     @click.stop="click(artwork.id)"
     class="image-card"
-    :style="{height: `${(375/artwork.width*artwork.height/column).toFixed(2)}px`}"
+    :style="{height: `${(375/artwork.width*artwork.height).toFixed(2)}px`}"
   >
     <img
       v-lazy="artwork.images[0].m"

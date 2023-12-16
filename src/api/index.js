@@ -1,5 +1,5 @@
 import { get } from './http'
-import { LocalStorage, SessionStorage } from '@/utils/storage'
+import { DBStorage, Expires } from '@/utils/storage'
 import moment from 'moment'
 import { Base64 } from 'js-base64';
 
@@ -176,8 +176,10 @@ const api = {
    * @param {Number} page 页数 [1,5]
    */
   async getRelated(id, page = 1) {
-    let relatedList
-    if (!SessionStorage.has(`relatedList_${id}_p${page}`)) {
+    const cache_key = `relatedList_${id}_p${page}`
+    let relatedList = await DBStorage.get(cache_key)
+
+    if (!relatedList) {
 
       let res = await get('/pixiv/', {
         type: 'related',
@@ -204,9 +206,7 @@ const api = {
         return parseIllust(art)
       })
 
-      SessionStorage.set(`relatedList_${id}_p${page}`, relatedList, 60 * 60 * 3)
-    } else {
-      relatedList = SessionStorage.get(`relatedList_${id}_p${page}`)
+      DBStorage.set(cache_key, relatedList, Expires.hour(3))
     }
 
 
@@ -220,9 +220,12 @@ const api = {
    * @param {String} date YYYY-MM-DD 默认为「前天」
    */
   async getRankList(mode = 'weekly', page = 1, date = moment().subtract(2, 'days').format('YYYY-MM-DD')) {
-    let rankList
     date = moment(date).format('YYYY-MM-DD')
-    if (!SessionStorage.has(`rankList_${mode}_${date}_${page}`)) {
+
+    const cache_key = `rankList_${mode}_${date}_${page}`
+    let rankList = await DBStorage.get(cache_key)
+
+    if (!rankList) {
 
       let res = await get('/pixiv/', {
         type: 'rank',
@@ -250,9 +253,7 @@ const api = {
         return parseIllust(art)
       })
 
-      SessionStorage.set(`rankList_${mode}_${date}_${page}`, rankList, 60 * 60 * 24)
-    } else {
-      rankList = SessionStorage.get(`rankList_${mode}_${date}_${page}`)
+      DBStorage.set(cache_key, rankList, Expires.YEAR)
     }
 
 
@@ -265,8 +266,10 @@ const api = {
    * @param {Number} page 页数 
    */
   async search(word, page = 1) {
-    let searchList, key = `searchList_${Base64.encode(word)}_${page}`
-    if (!SessionStorage.has(key)) {
+    const cache_key = `searchList_${Base64.encode(word)}_${page}`
+    let searchList = await DBStorage.get(cache_key)
+
+    if (!searchList) {
 
       let res = await get('/pixiv/', {
         type: 'search',
@@ -293,9 +296,7 @@ const api = {
         return parseIllust(art)
       })
 
-      SessionStorage.set(key, searchList, 60 * 60 * 24)
-    } else {
-      searchList = SessionStorage.get(key)
+      DBStorage.set(cache_key, searchList, Expires.hour(3))
     }
 
 
@@ -307,8 +308,10 @@ const api = {
    * @param {Number} id 作品ID
    */
   async getArtwork(id) {
-    let artwork
-    if (!LocalStorage.has(`artwork_${id}`)) {
+    const cache_key = `artwork_${id}`
+    let artwork = await DBStorage.get(cache_key)
+
+    if (!artwork) {
 
       let res = await get('/pixiv/', {
         type: 'illust',
@@ -332,9 +335,7 @@ const api = {
 
       artwork = parseIllust(data)
 
-      LocalStorage.set(`artwork_${id}`, artwork)
-    } else {
-      artwork = LocalStorage.get(`artwork_${id}`)
+      DBStorage.set(cache_key, artwork, Expires.MONTH)
     }
 
 
@@ -346,8 +347,10 @@ const api = {
    * @param {Number} id 作品ID
    */
   async ugoiraMetadata(id) {
-    let ugoira
-    if (!LocalStorage.has(`ugoira_${id}`)) {
+    const cache_key = `ugoira_${id}`
+    let ugoira = await DBStorage.get(cache_key)
+
+    if (!ugoira) {
 
       let res = await get('/pixiv/', {
         type: 'ugoira_metadata',
@@ -366,9 +369,7 @@ const api = {
         }
       }
 
-      LocalStorage.set(`ugoira_${id}`, ugoira)
-    } else {
-      ugoira = LocalStorage.get(`ugoira_${id}`)
+      DBStorage.set(cache_key, ugoira, Expires.MONTH)
     }
 
 
@@ -380,8 +381,10 @@ const api = {
    * @param {Number} id 画师ID
    */
   async getMemberInfo(id) {
-    let memberInfo
-    if (!LocalStorage.has(`memberInfo_${id}`)) {
+    const cache_key = `memberInfo_${id}`
+    let memberInfo = await DBStorage.get(cache_key)
+
+    if (!memberInfo) {
 
       let res = await get('/pixiv/', {
         type: 'member',
@@ -397,9 +400,7 @@ const api = {
         memberInfo = parseUser(res)
       }
 
-      LocalStorage.set(`memberInfo_${id}`, memberInfo)
-    } else {
-      memberInfo = LocalStorage.get(`memberInfo_${id}`)
+      DBStorage.set(cache_key, memberInfo, Expires.hour(3))
     }
 
 
@@ -411,9 +412,11 @@ const api = {
    * @param {Number} id 画师ID
    * @param {Number} page 页数 
    */
-  async getMemberArtwork(id, page) {
-    let memberArtwork
-    if (!LocalStorage.has(`memberArtwork_${id}_p${page}`)) {
+  async getMemberArtwork(id, page = 1) {
+    const cache_key = `memberArtwork_${id}_p${page}`
+    let memberArtwork = await DBStorage.get(cache_key)
+
+    if (!memberArtwork) {
 
       let res = await get('/pixiv/', {
         type: 'member_illust',
@@ -440,9 +443,7 @@ const api = {
         return parseIllust(art)
       })
 
-      LocalStorage.set(`memberArtwork_${id}_p${page}`, memberArtwork)
-    } else {
-      memberArtwork = LocalStorage.get(`memberArtwork_${id}_p${page}`)
+      DBStorage.set(cache_key, memberArtwork, Expires.hour(3))
     }
 
     return { status: 0, data: memberArtwork }
@@ -454,8 +455,10 @@ const api = {
    * @param {Number} max_bookmark_id max_bookmark_id
    */
   async getMemberFavorite(id, max_bookmark_id) {
-    let memberFavorite = {}
-    if (!LocalStorage.has(`memberFavorite_${id}_m${max_bookmark_id}`)) {
+    const cache_key = `memberFavorite_${id}_m${max_bookmark_id}`
+    let memberFavorite = await DBStorage.get(cache_key)
+
+    if (!memberFavorite) {
 
       let res = await get('/pixiv/', {
         type: 'favorite',
@@ -479,22 +482,24 @@ const api = {
       }
 
       const url = new URLSearchParams(data.next_url)
-      memberFavorite.next = url.get('max_bookmark_id')
-      memberFavorite.illusts = data.illusts.map(art => {
-        return parseIllust(art)
-      })
+      memberFavorite = {
+        next: url.get('max_bookmark_id'),
+        illusts: data.illusts.map(art => {
+          return parseIllust(art)
+        })
+      }
 
-      LocalStorage.set(`memberFavorite_${id}_m${max_bookmark_id}`, memberFavorite)
-    } else {
-      memberFavorite = LocalStorage.get(`memberFavorite_${id}_m${max_bookmark_id}`)
+      DBStorage.set(cache_key, memberFavorite, Expires.hour(3))
     }
 
     return { status: 0, data: memberFavorite }
   },
 
   async getTags() {
-    let tags
-    if (!LocalStorage.has(`tags`)) {
+    const cache_key = `tags`
+    let tags = await DBStorage.get(cache_key)
+
+    if (!tags) {
 
       let res = await get('/pixiv/', {
         type: 'tags'
@@ -523,9 +528,7 @@ const api = {
         }
       }
 
-      LocalStorage.set(`tags`, tags, 60 * 60 * 24)
-    } else {
-      tags = LocalStorage.get(`tags`)
+      DBStorage.set(cache_key, tags, Expires.DAY)
     }
 
     return { status: 0, data: tags }

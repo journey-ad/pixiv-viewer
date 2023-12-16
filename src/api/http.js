@@ -1,14 +1,19 @@
 import axios from 'axios'
+import store from '@/store'
 
-const baseURL = 'https://hibiapi.getloli.com/'
+const baseURL = 'https://hibiapi.journeyad.repl.co/api/'
 
-axios.defaults.baseURL = baseURL
 axios.defaults.timeout = 10000
 axios.defaults.headers.post['Content-Type'] = 'application/json'
 
 const get = async (url, params) => {
   try {
-    const res = await axios.get(url, { params })
+    const { SETTING } = store.state
+
+    const res = await axios.get(url, {
+      baseURL: SETTING.api || baseURL,
+      params
+    })
 
     return new Promise((resolve, reject) => {
       let data = res.data
@@ -25,7 +30,12 @@ const get = async (url, params) => {
 
 const post = async (url, data) => {
   try {
-    const res = await axios.post(url, data).data
+
+    const { SETTING } = store.state
+    const res = await axios.post(url,
+      data,
+      { baseURL: SETTING.api || baseURL }
+    ).data
 
     return new Promise((resolve, reject) => {
       let data = res.data

@@ -13,6 +13,13 @@ import Setting from '@/views/Setting'
 import Artwork from '@/views/Artwork'
 import Users from '@/views/Users'
 
+const initLength = window.history.length
+Object.defineProperty(VueRouter.prototype, '$historyCount', {
+  get() {
+    return window.history.length - initLength
+  }
+})
+
 Vue.use(VueRouter)
 
 const routes = [

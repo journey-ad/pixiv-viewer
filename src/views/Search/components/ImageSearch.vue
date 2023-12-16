@@ -147,6 +147,7 @@ export default {
     position: absolute;
     top: 10px;
     right: 46px;
+    font-size: 0;
 
     ::v-deep .van-uploader__wrapper--disabled {
       opacity: 1;

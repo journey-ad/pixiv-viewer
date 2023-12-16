@@ -8,18 +8,27 @@
     <van-cell class="cell" :border="false" is-link @click="toAuthor(author.id)">
       <template #title>
         <img class="icon" :src="author.avatar" :alt="author.name" />
-        <span class="title">{{author.name}} 的其他作品</span>
+        <span class="title">{{ author.name }} 的其他作品</span>
       </template>
     </van-cell>
-    <div class="artwork-list-wrap" v-if="memberArtwork.length>=10">
+    <div
+      class="artwork-list-wrap"
+      @mousewheel.stop
+      v-if="memberArtwork.length >= 10"
+    >
       <!-- <div class="artwork-list" :style="{width:`${(memberArtwork.length-5)/2.3*100}%`}"> -->
       <swiper class="artwork-list" :options="swiperOption">
         <swiper-slide
           class="image-card-slide"
-          v-for="art in memberArtwork.slice(0,memberArtwork.length-5)"
+          v-for="art in memberArtwork.slice(0, memberArtwork.length - 5)"
           :key="art.id"
         >
-          <ImageCard class="slide" mode="cover" :artwork="art" @click-card="toArtwork($event)" />
+          <ImageCard
+            class="slide"
+            mode="cover"
+            :artwork="art"
+            @click-card="toArtwork($event)"
+          />
         </swiper-slide>
         <swiper-slide class="image-slide-slide">
           <ImageSlide class="slide" :images="slides">
@@ -53,29 +62,33 @@ export default {
         this.memberArtwork.length - 5,
         this.memberArtwork.length
       );
-      return memberArtwork.map(artwork => {
+      return memberArtwork.map((artwork) => {
         return {
           title: artwork.title,
           src: artwork.images[0].m,
-          isCensored: this.isCensored(artwork)
+          isCensored: this.isCensored(artwork),
         };
       });
     },
-    ...mapGetters(["isCensored"])
+    ...mapGetters(["isCensored"]),
   },
   props: {
     id: {
       type: Number,
-      required: true
-    }
+      required: true,
+    },
   },
   data() {
     return {
       memberArtwork: null,
       swiperOption: {
         freeMode: true,
-        slidesPerView: "auto"
-      }
+        slidesPerView: "auto",
+        mousewheel: {
+          releaseOnEdges: true,
+          sensitivity: 4,
+        },
+      },
     };
   },
   methods: {
@@ -91,23 +104,23 @@ export default {
       } else {
         this.$toast({
           message: res.msg,
-          icon: require("@/svg/error.svg")
+          icon: require("@/svg/error.svg"),
         });
       }
     },
     toArtwork(id) {
       this.$router.push({
         name: "Artwork",
-        params: { id, list: this.memberArtwork }
+        params: { id, list: this.memberArtwork },
       });
     },
     toAuthor(id) {
       this.$router.push({
         name: "Users",
-        params: { id }
+        params: { id },
       });
     },
-    ...mapActions(["setGalleryList"])
+    ...mapActions(["setGalleryList"]),
   },
   mounted() {
     this.init();
@@ -115,8 +128,8 @@ export default {
   components: {
     [Cell.name]: Cell,
     ImageCard,
-    ImageSlide
-  }
+    ImageSlide,
+  },
 };
 </script>
 
@@ -165,7 +178,16 @@ export default {
     .artwork-list {
       display: flex;
 
+      ::v-deep .swiper-wrapper {
+        transition-duration: 0.55s !important;
+        /* Ease-out for scrolling, big difference when changed */
+        transition-timing-function: ease-out;
+      }
+
       .swiper-slide {
+        padding: 20px 0;
+        margin-right: 12px;
+
         &.image-card-slide {
           width: 40%;
         }
@@ -176,10 +198,15 @@ export default {
 
         .image-card {
           height: 330px !important;
-          border: 1px solid #ebebeb;
           border-radius: 18px;
           box-sizing: border-box;
-          margin-right: 6px;
+          cursor: pointer;
+          transition: all 0.24s ease-in-out;
+
+          &:hover {
+            transform: scale(1.03);
+            filter: drop-shadow(0px 4px 4px #dbdbdb);
+          }
         }
 
         .image-slide {
@@ -236,6 +263,18 @@ export default {
           }
         }
       }
+    }
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .author-card .artwork-list-wrap .artwork-list .swiper-slide {
+    &.image-card-slide {
+      width: 22%;
+    }
+
+    &.image-slide-slide {
+      width: 50%;
     }
   }
 }

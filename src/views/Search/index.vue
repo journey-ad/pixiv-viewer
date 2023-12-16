@@ -1,6 +1,6 @@
 <template>
   <div class="search">
-    <form class="search-bar-wrap" :class="{dropdown: focus}" action="/">
+    <form class="search-bar-wrap" :class="{ dropdown: focus }" action="/">
       <van-search
         class="search-bar"
         v-model="keywords"
@@ -12,17 +12,23 @@
         @focus="onFocus"
         @blur="onBlur(false)"
       ></van-search>
-      <div class="search-bar-word" @click="handleWordsClick($event)" ref="words">
-        <span class="placeholder" v-if="keywordsList.length===0 && !lastWord">请输入搜索关键词</span>
+      <div
+        class="search-bar-word"
+        @click="handleWordsClick($event)"
+        ref="words"
+      >
+        <span class="placeholder" v-if="keywordsList.length === 0 && !lastWord"
+          >请输入搜索关键词</span
+        >
         <div class="word" v-for="(keyword, index) in keywordsList" :key="index">
-          <span class="text">{{keyword}}</span>
+          <span class="text">{{ keyword }}</span>
           <span class="close" :data-index="index"></span>
         </div>
         <div class="word" v-if="lastWord">
-          <span class="text no-line">{{lastWord}}</span>
+          <span class="text no-line">{{ lastWord }}</span>
         </div>
       </div>
-      <div class="search-history" v-if="searchHistory.length>0 && focus">
+      <div class="search-history" v-if="searchHistory.length > 0 && focus">
         <div class="title-bar">
           历史搜索
           <div @click="clearHistory">
@@ -34,7 +40,9 @@
           @click="searchTag(keyword)"
           v-for="(keyword, index) in searchHistory"
           :key="index"
-        >{{keyword}}</div>
+        >
+          {{ keyword }}
+        </div>
       </div>
       <transition-group name="fade">
         <ImageSearch
@@ -51,9 +59,9 @@
         ></div>
       </transition-group>
     </form>
-    <div class="list-wrap" :class="{focus: focus}">
+    <div class="list-wrap" :class="{ focus: focus }">
       <van-list
-        v-if="artList.length>0"
+        v-if="artList.length > 0"
         class="result-list"
         v-model="loading"
         :finished="finished"
@@ -62,30 +70,29 @@
         error-text="网络异常，点击重新加载"
         @load="search"
       >
-        <div class="card-box">
-          <div class="column">
-            <ImageCard
-              mode="cover"
-              :artwork="art"
-              @click-card="toArtwork($event)"
-              v-for="art in odd(artList.slice(3))"
+        <div class="card-box__wrapper" ref="cardBox">
+          <waterfall
+            :col="col"
+            :width="itemWidth"
+            :gutterWidth="0"
+            :data="artList.slice(3)"
+          >
+            <router-link
+              :to="{
+                name: 'Artwork',
+                params: { id: art.id, list: artList },
+              }"
+              v-for="art in artList.slice(3)"
               :key="art.id"
-            />
-          </div>
-          <div class="column">
-            <ImageCard
-              mode="cover"
-              :artwork="art"
-              @click-card="toArtwork($event)"
-              v-for="art in even(artList.slice(3))"
-              :key="art.id"
-            />
-          </div>
+            >
+              <ImageCard mode="cover" :artwork="art" />
+            </router-link>
+          </waterfall>
         </div>
       </van-list>
-      <Tags v-if="keywords.trim()===''" @search="searchTag" />
+      <Tags v-if="keywords.trim() === ''" @search="searchTag" />
       <van-loading
-        v-show="keywords.trim()!=='' && artList.length===0"
+        v-show="keywords.trim() !== '' && artList.length === 0"
         class="loading"
         :size="'50px'"
       />
@@ -104,16 +111,18 @@ import _ from "lodash";
 import api from "@/api";
 export default {
   beforeRouteEnter(to, from, next) {
-    next(vm => {
-      document.querySelector(".app-main").scrollTo(0, vm.scrollTop);
+    next((vm) => {
+      document.documentElement.scrollTo(0, vm.scrollTop);
     });
   },
   beforeRouteLeave(to, from, next) {
-    this.scrollTop = document.querySelector(".app-main").scrollTop;
+    this.scrollTop = document.documentElement.scrollTop;
     next();
   },
   data() {
     return {
+      col: 2,
+      itemWidth: 0,
       scrollTop: 0,
       keywords__: "",
       keywords: "", // 关键词搜索框真实搜索内容
@@ -126,13 +135,13 @@ export default {
       loading: false,
       finished: false,
       maskShow: false,
-      imageSearchShow: true
+      imageSearchShow: true,
     };
   },
   watch: {
     $route() {
-      // console.log(this.$route.params);
-      let keyword = this.$route.params.keyword;
+      // console.log(this.$route.query);
+      let keyword = this.$route.query.keyword;
       if (!keyword || this.keywords.trim() === keyword.trim()) return;
 
       this.keywords = keyword + " ";
@@ -163,10 +172,10 @@ export default {
         let listWrap = document.querySelector(".list-wrap");
         listWrap && listWrap.scrollTo({ top: 0 });
       });
-    }
+    },
   },
   computed: {
-    ...mapState(["searchHistory"])
+    ...mapState(["searchHistory"]),
   },
   methods: {
     reset() {
@@ -190,7 +199,7 @@ export default {
         this.search(this.keywords);
       }
     },
-    search: _.throttle(async function(val) {
+    search: _.throttle(async function (val) {
       val = val || this.keywords;
       this.keywords__ = val;
       val = val.trim();
@@ -215,9 +224,11 @@ export default {
         this.loading = false;
         this.curPage++;
         if (this.curPage > 5) this.finished = true;
+
+        this.$nextTick(this.resize);
       } else {
         this.$toast({
-          message: res.msg
+          message: res.msg,
         });
         this.loading = false;
         this.error = true;
@@ -233,7 +244,7 @@ export default {
     toArtwork(id) {
       this.$router.push({
         name: "Artwork",
-        params: { id, list: this.artList }
+        params: { id, list: this.artList },
       });
     },
     onCancel() {},
@@ -252,8 +263,8 @@ export default {
         this.$router.push({
           name: "Artwork",
           params: {
-            id: keywords.trim()
-          }
+            id: keywords.trim(),
+          },
         });
         this.keywords = "";
         this.keywordsList = [];
@@ -283,7 +294,25 @@ export default {
       if (!flag) this.$refs.imageSearch.reset();
       this.maskShow = flag;
     },
-    ...mapActions(["setSearchHistory"])
+    resize() {
+      if (!this.$refs.cardBox) return;
+      const clientWidth = document.documentElement.clientWidth;
+
+      if (clientWidth < 375) {
+        this.col = 1;
+      } else if (clientWidth <= 768) {
+        this.col = 2;
+      } else if (clientWidth <= 1600) {
+        this.col = 3;
+      } else {
+        this.col = 4;
+      }
+
+      this.itemWidth = Math.floor(
+        this.$refs.cardBox.firstChild.clientWidth / this.col
+      );
+    },
+    ...mapActions(["setSearchHistory"]),
   },
   mounted() {
     let input = document.querySelector('input[type="search"]');
@@ -292,12 +321,16 @@ export default {
         input.setSelectionRange(input.value.length, input.value.length);
     });
 
-    let keyword = this.$route.params.keyword;
+    let keyword = this.$route.query.keyword;
     if (this.$route.name === "Search" && keyword) {
       this.keywords = keyword + " ";
       this.reset();
       this.search(this.keywords);
     }
+    window.addEventListener("resize", this.resize);
+  },
+  beforeUnmount() {
+    window.removeEventListener("resize", this.resize);
   },
   components: {
     Tags,
@@ -307,8 +340,8 @@ export default {
     [Loading.name]: Loading,
     [Empty.name]: Empty,
     [Icon.name]: Icon,
-    ImageCard
-  }
+    ImageCard,
+  },
 };
 </script>
 
@@ -380,6 +413,10 @@ export default {
       border-radius: 8px;
       overflow-x: scroll;
       white-space: nowrap;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
 
       .placeholder {
         font-size: 28px;
@@ -512,18 +549,23 @@ export default {
 .result-list {
   margin: 0 2px;
 
-  .card-box {
-    display: flex;
-    flex-direction: row;
-
-    .column {
-      width: 50%;
-
-      .image-card {
-        max-height: 360px;
-        margin: 4px 2px;
-      }
+  .card-box__wrapper {
+    .card-box {
+      display: flex;
+      flex-direction: row;
     }
+
+    .image-card {
+      max-height: 500px;
+      margin: 14px 6px;
+      border: 1px solid #ebebeb;
+    }
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .search .search-bar-wrap {
+    max-width: 1200px;
   }
 }
 </style>

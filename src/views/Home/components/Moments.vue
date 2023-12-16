@@ -7,26 +7,30 @@
       </template>
     </van-cell>
     <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
-      <van-list v-model="loading" :finished="finished" finished-text="没有更多了" @load="getLatest">
-        <div class="card-box">
-          <div class="column">
-            <ImageCard
-              mode="cover"
-              :artwork="art"
-              @click-card="toArtwork($event)"
-              v-for="art in odd(artList)"
+      <van-list
+        v-model="loading"
+        :finished="finished"
+        finished-text="没有更多了"
+        @load="getLatest"
+      >
+        <div class="card-box__wrapper" ref="cardBox">
+          <waterfall
+            :col="col"
+            :width="itemWidth"
+            :gutterWidth="0"
+            :data="artList"
+          >
+            <router-link
+              :to="{
+                name: 'Artwork',
+                params: { id: art.id, list: artList },
+              }"
+              v-for="art in artList"
               :key="art.id"
-            />
-          </div>
-          <div class="column">
-            <ImageCard
-              mode="cover"
-              :artwork="art"
-              @click-card="toArtwork($event)"
-              v-for="art in even(artList)"
-              :key="art.id"
-            />
-          </div>
+            >
+              <ImageCard mode="cover" :artwork="art" />
+            </router-link>
+          </waterfall>
         </div>
       </van-list>
     </van-pull-refresh>
@@ -42,10 +46,12 @@ export default {
   name: "Moments",
   data() {
     return {
+      col: 2,
+      itemWidth: 0,
       artList: [],
       loading: false,
       finished: false,
-      isLoading: false
+      isLoading: false,
     };
   },
   methods: {
@@ -59,12 +65,12 @@ export default {
       } else {
         this.$toast({
           message: res.msg,
-          icon: require("@/svg/error.svg")
+          icon: require("@/svg/error.svg"),
         });
       }
       this.isLoading = false;
     },
-    getLatest: _.throttle(async function() {
+    getLatest: _.throttle(async function () {
       let newList;
       let res = await api.getLatest();
       if (res.status === 0) {
@@ -72,34 +78,50 @@ export default {
         let artList = JSON.parse(JSON.stringify(this.artList));
 
         artList.push(...newList);
-        artList = _.uniqBy(artList, "id")
+        artList = _.uniqBy(artList, "id");
 
         this.artList = artList;
         this.loading = false;
         if (this.artList.length > 200) this.finished = true;
+        this.$nextTick(this.resize);
       } else {
         this.$toast({
           message: res.msg,
-          icon: require("@/svg/error.svg")
+          icon: require("@/svg/error.svg"),
         });
         this.loading = false;
       }
     }, 5000),
-    odd(list) {
-      return list.filter((_, index) => (index + 1) % 2);
-    },
-    even(list) {
-      return list.filter((_, index) => !((index + 1) % 2));
-    },
     toArtwork(id) {
       this.$router.push({
         name: "Artwork",
-        params: { id, list: this.artList }
+        params: { id, list: this.artList },
       });
-    }
+    },
+    resize() {
+      if (!this.$refs.cardBox) return;
+      const clientWidth = document.documentElement.clientWidth;
+
+      if (clientWidth < 375) {
+        this.col = 1;
+      } else if (clientWidth <= 768) {
+        this.col = 2;
+      } else if (clientWidth <= 1600) {
+        this.col = 3;
+      } else {
+        this.col = 4;
+      }
+
+      this.itemWidth = this.$refs.cardBox.firstChild.clientWidth / this.col;
+    },
   },
   mounted() {
     // this.getLatest();
+
+    window.addEventListener("resize", this.resize);
+  },
+  beforeUnmount() {
+    window.removeEventListener("resize", this.resize);
   },
   components: {
     [Cell.name]: Cell,
@@ -108,8 +130,8 @@ export default {
     [Icon.name]: Icon,
     [List.name]: List,
     [PullRefresh.name]: PullRefresh,
-    ImageCard
-  }
+    ImageCard,
+  },
 };
 </script>
 
@@ -199,17 +221,15 @@ export default {
 }
 
 .moments {
-  .card-box {
-    display: flex;
-    flex-direction: row;
+  .card-box__wrapper {
+    .card-box {
+      display: flex;
+      flex-direction: row;
+    }
 
-    .column {
-      width: 50%;
-
-      .image-card {
-        max-height: 360px;
-        margin: 4px 2px;
-      }
+    .image-card {
+      max-height: 360px;
+      margin: 4px 2px;
     }
   }
 }

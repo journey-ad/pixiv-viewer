@@ -5,41 +5,64 @@
       <canvas class="mask-text" ref="mask"></canvas>
     </div>
     <div class="author-info">
-      <img
-        class="avatar"
-        :src="artwork.author.avatar"
-        :alt="artwork.author.name"
-        @click="toAuthor(artwork.author.id)"
-      />
+      <router-link
+        :to="{
+          name: 'Users',
+          params: { id: artwork.author.id },
+        }"
+      >
+        <img
+          class="avatar"
+          :src="artwork.author.avatar"
+          :alt="artwork.author.name"
+          :title="artwork.author.name"
+        />
+      </router-link>
       <div class="name-box">
-        <h2 class="title">{{artwork.title}}</h2>
-        <div class="author">{{artwork.author.name}}</div>
+        <h2 class="title" :title="artwork.title">{{ artwork.title }}</h2>
+        <div class="author" :title="artwork.author.name">
+          {{ artwork.author.name }}
+        </div>
       </div>
     </div>
     <div class="date">
-      <span class="created">{{artwork.created | moment("YYYY-MM-DD hh:mm")}}</span>
+      <span class="created">{{
+        artwork.created | moment("YYYY-MM-DD hh:mm")
+      }}</span>
       <span class="view">
         <Icon name="view" class="icon"></Icon>
-        {{artwork.view | convertToK}}
+        {{ artwork.view | convertToK }}
       </span>
       <span class="like">
         <Icon name="like" class="icon"></Icon>
-        {{artwork.like | convertToK}}
+        {{ artwork.like | convertToK }}
+      </span>
+      <span class="pixiv">
+        <a
+          :href="`https://www.pixiv.net/artworks/${artwork.id}`"
+          target="_blank"
+          rel="noreferrer"
+          title="前往Pixiv查看作品"
+        >
+          <Icon name="pixiv" class="icon"></Icon>
+        </a>
       </span>
     </div>
-    <ul class="tag-list" :class="{censored: isCensored(artwork)}">
-      <template v-for="tag in artwork.tags">
-        <li class="tag name" @click="toSearch(tag.name)">#{{tag.name}}</li>
-        <li
-          class="tag translated"
-          @click="toSearch(tag.name)"
-          v-if="tag.translated_name"
-        >{{tag.translated_name}}</li>
+    <ul class="tag-list" :class="{ censored: isCensored(artwork) }">
+      <template v-for="(tag, index) in artwork.tags">
+        <router-link
+          class="tag"
+          :to="{ name: 'Search', query: { keyword: tag.name } }"
+          :key="`tag_${index}`"
+        >
+          #{{ tag.name }}
+          <span v-if="tag.translated_name">{{ tag.translated_name }}</span>
+        </router-link>
       </template>
     </ul>
     <div
       class="caption"
-      :class="{censored: isCensored(artwork)}"
+      :class="{ censored: isCensored(artwork) }"
       @click.stop.prevent="handleClick($event)"
       v-html="artwork.caption"
     ></div>
@@ -48,18 +71,21 @@
 
 <script>
 import { mapGetters } from "vuex";
+
+let maskFont = null;
+
 export default {
   props: {
     artwork: {
       type: Object,
-      required: true
-    }
+      required: true,
+    },
   },
   data() {
     return {};
   },
   computed: {
-    ...mapGetters(["isCensored"])
+    ...mapGetters(["isCensored"]),
   },
   filters: {
     convertToK(val) {
@@ -70,10 +96,12 @@ export default {
       } else {
         return val;
       }
-    }
+    },
   },
   methods: {
-    drawMask() {
+    async drawMask() {
+      await this.loadMaskFont();
+
       let canvas = this.$refs.mask;
       if (!canvas) return;
 
@@ -104,29 +132,34 @@ export default {
         }
       }
     },
+    loadMaskFont() {
+      return new Promise((resolve, reject) => {
+        if (maskFont) {
+          resolve();
+        } else {
+          new FontFace(
+            "Dosis",
+            `url(${require("@/assets/css/dosis-v7-latin-ext_latin-regular.woff")})`
+          )
+            .load()
+            .then((font) => {
+              document.fonts.add(font);
+              maskFont = font;
+              resolve();
+            })
+            .catch(reject);
+        }
+      });
+    },
     handleClick(e) {
       if (e.target.tagName === "A") {
         window.open(e.target.href);
       }
     },
-    toAuthor(id) {
-      this.$router.push({
-        name: "Users",
-        params: { id }
-      });
-    },
-    toSearch(keyword) {
-      this.$router.push({
-        name: "Search",
-        params: {
-          keyword: keyword
-        }
-      });
-    }
   },
   mounted() {
     this.drawMask();
-  }
+  },
 };
 </script>
 
@@ -187,12 +220,12 @@ export default {
 
   .date {
     font-size: 24px;
-    color: #7c8f99;
+    color: #303030;
     margin: 16px 0;
 
     .view {
       margin-left: 24px;
-      color: #3e7699;
+      color: #0096fa;
 
       .icon {
         font-size: 1em;
@@ -212,34 +245,45 @@ export default {
       }
     }
 
+    .pixiv {
+      margin-left: 20px;
+      cursor: pointer;
+
+      .icon {
+        width: auto;
+        height: 28px;
+      }
+    }
+
     .id {
       margin-left: 12px;
     }
   }
 
   .tag-list {
-    color: #3e7699;
     margin: 16px 0;
     overflow: hidden;
 
     .tag {
+      display: inline-block;
       line-height: 42px;
       font-size: 26px;
-      float: left;
-      margin-right: 10px;
+      margin-right: 20px;
+      color: #0096fa;
+      cursor: pointer;
 
-      &.translated {
+      span {
         font-size: 22px;
         color: #adadad;
-        margin-right: 20px;
       }
     }
   }
 
   .caption {
     font-size: 24px;
-    line-height: 32px;
+    line-height: 1.5;
     word-break: break-all;
+    user-select: text;
 
     ::v-deep a {
       color: #36a8f5;
