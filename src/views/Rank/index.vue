@@ -312,4 +312,12 @@ export default {
     }
   }
 }
+
+@media screen and (min-width: 1700px) {
+  .rank {
+    .top {
+      max-width: 1600px;
+    }
+  }
+}
 </style>

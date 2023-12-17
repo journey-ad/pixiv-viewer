@@ -425,12 +425,18 @@ const api = {
       })
 
       let data
-      if (res.illusts) {
+      if (res.illusts.length) {
         data = res.illusts
       } else if (res.error) {
         return {
           status: -1,
           msg: res.error.user_message || res.error.message
+        }
+      } else if (!res.next_url) {
+        return {
+          status: 0,
+          data: [],
+          finished: true
         }
       } else {
         return {

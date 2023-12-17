@@ -54,6 +54,7 @@ export default {
   &.show-nav {
     .back-top {
       bottom: 130px;
+      bottom: calc(130px + env(safe-area-inset-bottom));
     }
   }
 
@@ -61,6 +62,7 @@ export default {
     position: fixed;
     right: 40px;
     bottom: 40px;
+    bottom: calc(40px + env(safe-area-inset-bottom));
     cursor: pointer;
 
     .icon-top {
@@ -73,6 +75,12 @@ export default {
 @media screen and (min-width: 768px) {
   #app {
     max-width: 1200px;
+  }
+}
+
+@media screen and (min-width: 1700px) {
+  #app {
+    max-width: 1600px;
   }
 }
 </style>

@@ -77,6 +77,17 @@
       :images="original"
       v-model="show"
     >
+      <template v-slot:cover>
+        <div class="preview-action__wrapper">
+          <div
+            class="preview-action"
+            @click="saveImage(original[curView])"
+            title="保存图片"
+          >
+            <Icon class="save" name="save"></Icon>
+          </div>
+        </div>
+      </template>
     </van-image-preview>
   </div>
 </template>
@@ -373,6 +384,13 @@ export default {
       });
       gif.render();
     },
+    saveImage(src) {
+      const { id, title, author } = this.artwork;
+      const ext = new URL(src).pathname.split(".").pop();
+      const fileName = `${id} - [${author.name}] ${title}.${ext}`;
+
+      FileSaver.saveAs(src, fileName);
+    },
     download(type) {
       switch (type) {
         case "ZIP":
@@ -564,6 +582,26 @@ export default {
         height: 4px;
         background: linear-gradient(to right, #3fffa2 0%, #1a9be0 100%);
       }
+    }
+  }
+}
+
+.preview-action__wrapper {
+  position: fixed;
+  right: 50px;
+  bottom: 60px;
+  bottom: calc(60px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  .preview-action {
+    cursor: pointer;
+    font-size: 0;
+
+    svg {
+      width: 70px;
+      height: 70px;
     }
   }
 }

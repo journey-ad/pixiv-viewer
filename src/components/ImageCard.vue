@@ -2,30 +2,49 @@
   <div
     @click.stop="click(artwork.id)"
     class="image-card"
-    :style="{height: `${(375/artwork.width*artwork.height).toFixed(2)}px`}"
+    :style="{
+      height: `${((375 / artwork.width) * artwork.height).toFixed(2)}px`,
+    }"
   >
-    <img
-      v-lazy="artwork.images[0].m"
-      :alt="artwork.title"
-      class="image"
-      :class="{censored: isCensored(artwork)}"
-    />
+    <div class="image-wrap">
+      <img
+        v-lazy="artwork.images[0].m"
+        :alt="artwork.title"
+        class="image"
+        :class="{ censored: isCensored(artwork) }"
+      />
+    </div>
     <van-tag
       class="tag-r18"
       round
-      :color="tagText==='R-18'?'#fb7299':'#ff3f3f'"
+      :color="tagText === 'R-18' ? '#fb7299' : '#ff3f3f'"
       v-if="tagText"
-    >{{tagText}}</van-tag>
-    <div class="layer-num" v-if="mode==='cover' && artwork.count>1">
-      <Icon name="layer" scale="1.5"></Icon>
-      {{artwork.count}}
+      >{{ tagText }}</van-tag
+    >
+    <div class="layer-num" v-if="mode === 'cover' && artwork.count > 1">
+      <Icon name="layer"></Icon>
+      {{ artwork.count }}
     </div>
-    <Icon class="btn-play" name="play" scale="8" v-if="mode==='cover' && artwork.type==='ugoira'"></Icon>
-    <div class="meta" v-if="mode==='meta'">
+    <Icon
+      class="btn-play"
+      name="play"
+      scale="8"
+      v-if="mode === 'cover' && artwork.type === 'ugoira'"
+    ></Icon>
+    <div class="meta" v-if="mode === 'meta'">
       <div class="content">
-        <h2 class="title">{{artwork.title}}</h2>
-        <img :src="artwork.author.avatar" :alt="artwork.author.name" class="avatar" />
-        <div class="author">{{artwork.author.name}}</div>
+        <h2 class="title">{{ artwork.title }}</h2>
+        <img
+          :src="artwork.author.avatar"
+          :alt="artwork.author.name"
+          class="avatar"
+        />
+        <div class="author">{{ artwork.author.name }}</div>
+      </div>
+    </div>
+    <div class="meta" v-if="mode === 'title'">
+      <div class="content">
+        <h2 class="title">{{ artwork.title }}</h2>
       </div>
     </div>
   </div>
@@ -41,18 +60,18 @@ export default {
   props: {
     artwork: {
       type: Object,
-      required: true
+      required: true,
     },
     mode: {
       type: String,
       required: false,
-      default: "cover"
+      default: "cover",
     },
     column: {
       type: Number,
       required: false,
-      default: 2
-    }
+      default: 2,
+    },
   },
   computed: {
     tagText() {
@@ -64,7 +83,7 @@ export default {
         return false;
       }
     },
-    ...mapGetters(["isCensored"])
+    ...mapGetters(["isCensored"]),
   },
   methods: {
     click(id) {
@@ -75,11 +94,11 @@ export default {
         return false;
 
       this.$emit("click-card", id);
-    }
+    },
   },
   components: {
-    [Tag.name]: Tag
-  }
+    [Tag.name]: Tag,
+  },
 };
 </script>
 
@@ -91,15 +110,33 @@ export default {
   align-items: center;
   overflow: hidden;
   background: #fafafa;
+  border-radius: 12px;
+  cursor: pointer;
 
-  .image {
+  .image-wrap {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
-    &[lazy='loading'] {
-      width: 100px;
-      height: 100px;
+    &:hover {
+      .image {
+        transform: scale(1.05);
+      }
+    }
+
+    .image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform-origin: center;
+      transition: transform 0.2s ease-in-out;
+
+      &[lazy='loading'] {
+        width: 100px;
+        height: 100px;
+      }
     }
   }
 
@@ -113,6 +150,8 @@ export default {
     position: absolute;
     top: 4px;
     right: 3px;
+    display: flex;
+    align-items: center;
     background: rgba(#000, 0.3);
     color: #fff;
     padding: 4px 8px;
@@ -120,8 +159,10 @@ export default {
     border-radius: 20px;
 
     svg {
+      width: 20px;
+      height: 20px;
       vertical-align: bottom;
-      margin-right: -2px;
+      margin-right: 2px;
     }
   }
 
@@ -137,6 +178,7 @@ export default {
     left: 0;
     width: 100%;
     height: 100%;
+    pointer-events: none;
 
     &::before {
       position: absolute;
@@ -155,7 +197,7 @@ export default {
       color: #fff;
 
       .title {
-        font-size: 34px;
+        font-size: 24px;
         margin: 10px 0;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -165,9 +207,9 @@ export default {
       }
 
       .avatar {
-        width: 48px;
-        height: 48px;
-        margin-right: 8px;
+        width: 28px;
+        height: 28px;
+        margin-right: 4px;
         vertical-align: bottom;
         border-radius: 50%;
         overflow: hidden;
@@ -175,7 +217,7 @@ export default {
 
       .author {
         display: inline-block;
-        font-size: 30px;
+        font-size: 20px;
         font-weight: 200;
       }
     }

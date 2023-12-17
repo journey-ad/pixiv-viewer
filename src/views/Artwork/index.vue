@@ -95,10 +95,6 @@ export default {
       let id = +this.$route.params.id;
       this.artwork = {};
       this.getArtwork(id);
-
-      if(this.$route.length > 2) {
-        
-      }
     },
     async getArtwork(id) {
       // console.log(id);
@@ -106,6 +102,8 @@ export default {
       if (res.status === 0) {
         this.artwork = res.data;
         this.loading = false;
+
+        document.title = `${this.artwork.title} - ${this.artwork.author.name} - pixiv-viewer`;
 
         if (this.isCensored(this.artwork)) {
           this.$toast({

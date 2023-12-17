@@ -29,7 +29,7 @@
             v-for="art in artList"
             :key="art.id"
           >
-            <ImageCard mode="cover" :artwork="art" :column="col" />
+            <ImageCard mode="meta" :artwork="art" :column="col" />
           </router-link>
         </waterfall>
       </div>

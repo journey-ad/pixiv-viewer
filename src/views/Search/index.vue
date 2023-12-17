@@ -85,7 +85,7 @@
               v-for="art in artList.slice(3)"
               :key="art.id"
             >
-              <ImageCard mode="cover" :artwork="art" />
+              <ImageCard mode="meta" :artwork="art" />
             </router-link>
           </waterfall>
         </div>
@@ -566,6 +566,12 @@ export default {
 @media screen and (min-width: 768px) {
   .search .search-bar-wrap {
     max-width: 1200px;
+  }
+}
+
+@media screen and (min-width: 1700px) {
+  .search .search-bar-wrap {
+    max-width: 1600px;
   }
 }
 </style>

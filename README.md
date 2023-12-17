@@ -1,5 +1,7 @@
+<p align="center"><img src="https://count.getloli.com/get/@pixiv-viewer.github" alt="pixiv-viewer"></p>
+
 # pixiv-viewer
-[![Build Status](https://www.travis-ci.org/journey-ad/pixiv-viewer.svg?branch=master)](https://www.travis-ci.org/journey-ad/pixiv-viewer)
+![Github CI](https://github.com/journey-ad/pixiv-viewer/workflows/Github%20CI/badge.svg?branch=master)
 
 [DEMO](https://journey-ad.github.io/pixiv-viewer)
 
@@ -16,14 +18,10 @@
 - [x] 以图搜图
 - [x] 动图播放
 - [x] 动图下载(ZIP/GIF/WebM 仅支持 web 端)
+- [x] 使用 localForage 存储缓存
+- [x] 多端样式适配
 - [ ] 历史记录
 - [ ] 左右滑动浏览作品
-
-## TODO
-- [ ] 使用 localForage 存储缓存
-- [ ] 多端样式适配
-- [ ] APP 端保存文件
-- [ ] 热更新资源文件
 
 ## Preview
 
@@ -61,13 +59,11 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 ## Credit
 - Vue：前端框架
 - Vant UI：组件库
-- 自己的 [Pixiv API](https://api.imjad.cn/pixiv_v2.md)：提供大部分接口支持
+- [HibiAPI](https://github.com/mixmoe/HibiAPI)：提供接口支持
 - [SauceNAO](https://saucenao.com/)：以图搜图功能接口
 - [Cloudflare Workers](https://workers.cloudflare.com/)：图像反代服务
 - Github Pages：提供页面托管服务
-- Travis CI：提供持续集成服务
-- HTML5+：App 功能支持
-- HBuilder X：云打包 App
+- Github Actions：提供持续集成服务
 
 ## LICENSE
 [![MIT License Copyright (c) 2020 Jad](https://img.shields.io/github/license/journey-ad/pixiv-viewer)](https://github.com/journey-ad/pixiv-viewer/blob/master/LICENSE)

@@ -1,6 +1,6 @@
 <template>
   <div class="user-container">
-    <div class="illust-wrap" v-show="showIllusts">
+    <div class="illust-wrap" v-if="showIllusts">
       <div class="illust">
         <TopBar
           :action="
@@ -16,7 +16,7 @@
         />
       </div>
     </div>
-    <div class="illust-wrap" v-show="showFavorite">
+    <div class="illust-wrap" v-if="showFavorite">
       <div class="illust">
         <TopBar
           :action="
@@ -151,6 +151,7 @@ export default {
       if (res.status === 0) {
         this.userInfo = res.data;
         this.loading = false;
+        document.title = `${this.userInfo.name} - pixiv-viewer`;
         this.$nextTick(() => {
           this.getCommentHeight();
         });
@@ -195,11 +196,6 @@ export default {
 <style lang="stylus" scoped>
 .user-container {
   height: 100%;
-
-  .illust-wrap, .user-wrap {
-    height: 100vh;
-    overflow-y: scroll;
-  }
 }
 
 .users {
