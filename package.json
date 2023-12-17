@@ -46,9 +46,5 @@
     "stylus-loader": "^3.0.2",
     "vue-svg-icon": "^1.2.9",
     "vue-template-compiler": "^2.7.15"
-  },
-  "pwa": {
-    "name": "pixiv-viewer",
-    "themeColor": "#2cabff"
   }
 }

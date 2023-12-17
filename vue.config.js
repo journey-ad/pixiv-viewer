@@ -5,6 +5,10 @@ module.exports = {
   publicPath: process.env.NODE_ENV === 'production'
     ? '././'
     : '/',
+  pwa: {
+    name: "pixiv-viewer",
+    themeColor: "#2cabff"
+  },
   chainWebpack: config => {
     config
       .module
