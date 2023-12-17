@@ -17,7 +17,7 @@
     <van-list
       v-model="loading"
       :finished="finished"
-      :finished-text="!once ? '没有更多了' : ''"
+      :finished-text="!once || !artList.length ? '没有更多了' : ''"
       :error.sync="error"
       error-text="网络异常，点击重新加载"
       @load="getMemberArtwork()"
@@ -37,7 +37,7 @@
             v-for="art in artList"
             :key="art.id"
           >
-            <ImageCard mode="title" :artwork="art" />
+            <ImageCard mode="meta" :artwork="art" />
           </router-link>
         </waterfall>
       </div>
@@ -86,7 +86,11 @@ export default {
       let newList;
       let res = await api.getMemberArtwork(this.id, this.curPage);
       if (res.status === 0) {
-        if (res.finished) return (this.finished = true);
+        if (res.finished) {
+          this.finished = true;
+          this.loading = false;
+          return;
+        }
 
         newList = res.data;
         if (this.once) newList = newList.slice(0, 10);

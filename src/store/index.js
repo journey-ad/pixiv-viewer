@@ -45,9 +45,11 @@ export default new Vuex.Store({
         state.searchHistory = []
         LocalStorage.remove('__PIXIV_searchHistory')
       } else {
-        if (state.searchHistory.includes(obj)) return false
-        if (state.searchHistory.length >= 20) state.searchHistory.shift()
-        state.searchHistory.push(obj)
+        if (state.searchHistory.includes(obj)) state.searchHistory.splice(state.searchHistory.indexOf(obj), 1)
+
+        if (state.searchHistory.length >= 20) state.searchHistory.pop()
+        state.searchHistory.unshift(obj)
+
         LocalStorage.set('__PIXIV_searchHistory', state.searchHistory)
       }
     },

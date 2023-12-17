@@ -1,5 +1,8 @@
 <template>
-  <div class="top-bar-wrap">
+  <div
+    class="top-bar-wrap"
+    :class="{ transparent: transparent, [color]: true, padding: padding }"
+  >
     <van-nav-bar class="top-bar" left-arrow :border="false" @click-left="back">
       <template #left>
         <Icon name="left-arrow" scale="2.6"></Icon>
@@ -17,6 +20,18 @@ export default {
   props: {
     action: {
       type: Function,
+    },
+    transparent: {
+      type: Boolean,
+      default: false,
+    },
+    color: {
+      type: String,
+      default: "light",
+    },
+    padding: {
+      type: Boolean,
+      default: true,
     },
   },
   methods: {
@@ -52,11 +67,25 @@ export default {
   position: fixed;
   top: 0;
   left: 0;
-  padding-top: 40px;
   width: 100%;
   height: 160px;
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(#fff, 0));
   z-index: 99;
+
+  &.transparent {
+    background: none;
+  }
+
+  &.dark {
+    .top-bar svg {
+      color: #333;
+      filter: none;
+    }
+  }
+
+  &.padding {
+    padding-top: 40px;
+  }
 }
 
 .top-bar {

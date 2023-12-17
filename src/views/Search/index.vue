@@ -22,13 +22,26 @@
         >
         <div class="word" v-for="(keyword, index) in keywordsList" :key="index">
           <span class="text">{{ keyword }}</span>
-          <span class="close" :data-index="index"></span>
+          <span class="close" :data-index="index">
+            <Icon name="close"></Icon>
+          </span>
         </div>
         <div class="word" v-if="lastWord">
           <span class="text no-line">{{ lastWord }}</span>
         </div>
       </div>
-      <div class="search-history" v-if="searchHistory.length > 0 && focus">
+      <div class="search-type" v-show="focus">
+        <div
+          class="seacch-type__item"
+          :class="{ active: searchType === item.type }"
+          @click="changeSearchType(item.type)"
+          v-for="item in searchTypeMap"
+          :key="item.type"
+        >
+          {{ item.name }}
+        </div>
+      </div>
+      <div class="search-history" v-show="searchHistory.length > 0 && focus">
         <div class="title-bar">
           历史搜索
           <div @click="clearHistory">
@@ -75,17 +88,26 @@
             :col="col"
             :width="itemWidth"
             :gutterWidth="0"
-            :data="artList.slice(3)"
+            :data="artList"
           >
             <router-link
               :to="{
-                name: 'Artwork',
+                name: { illust: 'Artwork', novel: 'Novel' }[searchType],
                 params: { id: art.id, list: artList },
               }"
-              v-for="art in artList.slice(3)"
+              v-for="art in artList"
               :key="art.id"
             >
-              <ImageCard mode="meta" :artwork="art" />
+              <ImageCard
+                mode="meta"
+                :artwork="art"
+                v-if="searchType === 'illust'"
+              />
+              <NovelCard
+                mode="meta"
+                :artwork="art"
+                v-if="searchType === 'novel'"
+              />
             </router-link>
           </waterfall>
         </div>
@@ -104,6 +126,7 @@
 <script>
 import { Search, List, Loading, Empty, Icon } from "vant";
 import ImageCard from "@/components/ImageCard";
+import NovelCard from "@/components/NovelCard";
 import Tags from "./components/Tags";
 import ImageSearch from "./components/ImageSearch";
 import { mapState, mapActions } from "vuex";
@@ -124,6 +147,7 @@ export default {
       col: 2,
       itemWidth: 0,
       scrollTop: 0,
+      searchType: "illust",
       keywords__: "",
       keywords: "", // 关键词搜索框真实搜索内容
       keywordsList: [], // 关键词搜索框分词列表（空格分割）
@@ -136,16 +160,21 @@ export default {
       finished: false,
       maskShow: false,
       imageSearchShow: true,
+      searchTypeMap: [
+        { name: "插画", type: "illust" },
+        { name: "小说", type: "novel" },
+      ],
     };
   },
   watch: {
     $route() {
       // console.log(this.$route.query);
-      let keyword = this.$route.query.keyword;
+      const { type, keyword } = this.$route.query;
       if (!keyword || this.keywords.trim() === keyword.trim()) return;
 
       this.keywords = keyword + " ";
       this.reset();
+      this.searchType = type || "illust";
       this.search(this.keywords);
     },
     keywords() {
@@ -199,6 +228,14 @@ export default {
         this.search(this.keywords);
       }
     },
+    changeSearchType(type) {
+      if (this.searchType === type) return;
+
+      this.reset();
+      this.searchType = type;
+      this.resize();
+      this.search(this.keywords);
+    },
     search: _.throttle(async function (val) {
       val = val || this.keywords;
       this.keywords__ = val;
@@ -212,7 +249,7 @@ export default {
 
       this.setSearchHistory(val);
 
-      let res = await api.search(val, this.curPage);
+      let res = await api.search(val, this.curPage, this.searchType);
       if (res.status === 0) {
         let newList = res.data;
         let artList = JSON.parse(JSON.stringify(this.artList));
@@ -224,6 +261,19 @@ export default {
         this.loading = false;
         this.curPage++;
         if (this.curPage > 5) this.finished = true;
+
+        if (
+          this.$route.query.keyword !== val ||
+          this.$route.query.type !== this.searchType
+        ) {
+          this.$router.replace({
+            name: "Search",
+            query: {
+              type: this.searchType,
+              keyword: val,
+            },
+          });
+        }
 
         this.$nextTick(this.resize);
       } else {
@@ -298,14 +348,18 @@ export default {
       if (!this.$refs.cardBox) return;
       const clientWidth = document.documentElement.clientWidth;
 
-      if (clientWidth < 375) {
+      if (this.searchType == "novel") {
         this.col = 1;
-      } else if (clientWidth <= 768) {
-        this.col = 2;
-      } else if (clientWidth <= 1600) {
-        this.col = 3;
       } else {
-        this.col = 4;
+        if (clientWidth < 375) {
+          this.col = 1;
+        } else if (clientWidth <= 768) {
+          this.col = 2;
+        } else if (clientWidth <= 1600) {
+          this.col = 3;
+        } else {
+          this.col = 4;
+        }
       }
 
       this.itemWidth = Math.floor(
@@ -321,10 +375,13 @@ export default {
         input.setSelectionRange(input.value.length, input.value.length);
     });
 
-    let keyword = this.$route.query.keyword;
+    const { type, keyword } = this.$route.query;
     if (this.$route.name === "Search" && keyword) {
+      if (!keyword || this.keywords.trim() === keyword.trim()) return;
+
       this.keywords = keyword + " ";
       this.reset();
+      this.searchType = type || "illust";
       this.search(this.keywords);
     }
     window.addEventListener("resize", this.resize);
@@ -341,6 +398,7 @@ export default {
     [Empty.name]: Empty,
     [Icon.name]: Icon,
     ImageCard,
+    NovelCard,
   },
 };
 </script>
@@ -363,10 +421,12 @@ export default {
     top: env(safe-area-inset-top);
     width: 100%;
     max-width: 10rem;
-    // min-height: 122px;
+    padding: 20px 10px;
+    padding-top: 124px;
     background: #fff;
-    z-index: 1;
+    z-index: 20;
     transition: all 0.2s;
+    box-sizing: border-box;
 
     &.dropdown {
       // height: 500px;
@@ -388,6 +448,8 @@ export default {
 
     .search-bar {
       position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 128px;
 
@@ -405,7 +467,7 @@ export default {
     .search-bar-word {
       position: absolute;
       top: 40px;
-      left: 88px;
+      left: 94px;
       font-size: 0;
       width: 100%;
       max-width: 580px;
@@ -426,40 +488,48 @@ export default {
 
       // box-sizing: border-box;
       ::v-deep .word {
+        position: relative;
         display: inline-block;
         color: #fff;
-        background: #7bb7e7;
+        background: #0096fa;
         padding: 10px 8px;
+        padding-right: 30px;
         margin: 0 8px;
         border-radius: 8px;
         font-size: 24px;
         overflow: hidden;
 
         .text {
-          border-right: 1px solid #acd9fd;
-          padding-right: 8px;
-
           &.no-line {
             border-color: rgba(#fff, 0);
           }
         }
 
         .close {
-          display: inline-block;
-          width: 24px;
-          height: 24px;
-          background: url('~@/svg/close.svg');
-          background-size: 100%;
+          position: absolute;
+          top: 6px;
+          right: 4px;
+          width: 22px;
+          height: 22px;
+          font-size: 0;
+          cursor: pointer;
+
+          .svg-icon {
+            width: 100%;
+            height: 100%;
+            color: #fff;
+            fill: #999;
+            pointer-events: none;
+          }
         }
       }
     }
 
     .image-search-mask {
-      position: fixed;
+      position: absolute;
       top: 128px;
       top: env(safe-area-inset-top);
       width: 100%;
-      max-width: 10rem;
       height: calc(100% - 128px);
       height: calc(100% - env(safe-area-inset-top));
       box-sizing: border-box;
@@ -468,12 +538,44 @@ export default {
       transition: all 0.2s;
     }
 
+    .search-type {
+      margin: 8px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 999px;
+      overflow: hidden;
+      outline: 1px solid #eee;
+
+      .seacch-type__item {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 50%;
+        padding: 18px 0;
+        font-size: 26px;
+        border-right: 1px solid #eee;
+        transition: all 0.12s;
+        cursor: pointer;
+
+        &:hover {
+          filter: brightness(1.1);
+        }
+
+        &:last-child {
+          border-right: none;
+        }
+
+        &.active {
+          color: #fff;
+          background: #0096fa;
+        }
+      }
+    }
+
     .search-history {
       // position: absolute;
-      margin-top: 150px;
-      margin-bottom: 20px;
       width: 100%;
-      padding: 0 6px;
       box-sizing: border-box;
       overflow: hidden;
 
@@ -513,7 +615,7 @@ export default {
     position: relative;
     min-height: 100vh;
     // overflow-y: scroll;
-    padding-top: 122px;
+    padding-top: 128px;
     padding-bottom: 100px;
     padding-bottom: calc(100px + env(safe-area-inset-bottom));
     box-sizing: border-box;
@@ -525,15 +627,15 @@ export default {
     &.focus {
       >.mask {
         display: block;
-        position: fixed;
+        position: absolute;
         top: 122px;
         width: 100%;
-        max-width: 10rem;
         height: calc(100% - 122px);
         box-sizing: border-box;
         // pointer-events: none;
         background: rgba(0, 0, 0, 0.6);
         transition: all 0.2s;
+        z-index: 10;
       }
     }
   }
@@ -555,7 +657,7 @@ export default {
       flex-direction: row;
     }
 
-    .image-card {
+    .image-card, .novel-card {
       max-height: 500px;
       margin: 14px 6px;
       border: 1px solid #ebebeb;

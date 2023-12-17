@@ -32,7 +32,7 @@ export default {
   watch: {
     showNav: {
       handler(val) {
-        this.$root.$el.classList.toggle("show-nav", val);
+        this.$root.$el.classList[val ? "add" : "remove"]("show-nav");
       },
       immediate: true,
     },

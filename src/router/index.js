@@ -12,6 +12,7 @@ import Rank from '@/views/Rank'
 import Setting from '@/views/Setting'
 import Artwork from '@/views/Artwork'
 import Users from '@/views/Users'
+import NovelChapter from '@/views/Novel/chapter'
 
 const initLength = window.history.length
 Object.defineProperty(VueRouter.prototype, '$historyCount', {
@@ -76,6 +77,11 @@ const routes = [
             path: '/users/:id',
             name: 'Users',
             component: Users
+          },
+          {
+            path: '/novel/:id',
+            name: 'Novel',
+            component: NovelChapter
           }
         ]
       }

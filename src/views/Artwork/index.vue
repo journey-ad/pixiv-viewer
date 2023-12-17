@@ -109,6 +109,7 @@ export default {
           this.$toast({
             message: "根据当前设置，此内容将不予显示",
             icon: require("@/svg/ban-view.svg"),
+            duration: 3000,
           });
           setTimeout(() => {
             // this.$router.back();

@@ -20,7 +20,10 @@ html {
   overflow-y: scroll;
   box-sizing: border-box;
   overscroll-behavior: none;
-  scroll-behavior: smooth;
+
+  &.no-scroll {
+    overflow: hidden;
+  }
 }
 
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700&display=swap');

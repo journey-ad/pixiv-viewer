@@ -1,40 +1,45 @@
 <template>
   <div class="favorite">
-    <van-cell class="cell" :border="false" is-link @click="onClick()" v-if="once">
+    <van-cell
+      class="cell"
+      :border="false"
+      is-link
+      @click="onClick()"
+      v-if="once"
+    >
       <template #title>
         <span class="title">
           用户收藏
-          <span class="num" v-if="num">{{num}}件作品</span>
+          <span class="num" v-if="num">{{ num }}件作品</span>
         </span>
       </template>
     </van-cell>
     <van-list
       v-model="loading"
       :finished="finished"
-      :finished-text="!once ? '没有更多了' : ''"
+      :finished-text="!once || !artList.length ? '没有更多了' : ''"
       :error.sync="error"
       error-text="网络异常，点击重新加载"
       @load="getMemberFavorite()"
     >
-      <div class="card-box">
-        <div class="column">
-          <ImageCard
-            mode="cover"
-            :artwork="art"
-            @click-card="toArtwork($event)"
-            v-for="art in odd(artList)"
+      <div class="card-box__wrapper" ref="cardBox">
+        <waterfall
+          :col="col"
+          :width="itemWidth"
+          :gutterWidth="0"
+          :data="artList"
+        >
+          <router-link
+            :to="{
+              name: 'Artwork',
+              params: { id: art.id, list: artList },
+            }"
+            v-for="art in artList"
             :key="art.id"
-          />
-        </div>
-        <div class="column">
-          <ImageCard
-            mode="cover"
-            :artwork="art"
-            @click-card="toArtwork($event)"
-            v-for="art in even(artList)"
-            :key="art.id"
-          />
-        </div>
+          >
+            <ImageCard mode="meta" :artwork="art" />
+          </router-link>
+        </waterfall>
       </div>
     </van-list>
   </div>
@@ -50,23 +55,25 @@ export default {
   props: {
     id: {
       type: Number,
-      required: true
+      required: true,
     },
     num: {
-      type: Number
+      type: Number,
     },
     once: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   data() {
     return {
+      col: 2,
+      itemWidth: 0,
       next: 0,
       artList: [],
       error: false,
       loading: false,
-      finished: false
+      finished: false,
     };
   },
   methods: {
@@ -74,7 +81,7 @@ export default {
       this.next = 0;
       this.artList = [];
     },
-    getMemberFavorite: _.throttle(async function() {
+    getMemberFavorite: _.throttle(async function () {
       if (!this.id) return;
       let newList;
       let res = await api.getMemberFavorite(this.id, this.next);
@@ -90,9 +97,10 @@ export default {
         this.artList = artList;
         this.loading = false;
         if (this.once || !this.next) this.finished = true;
+        this.$nextTick(this.resize);
       } else {
         this.$toast({
-          message: res.msg
+          message: res.msg,
         });
         this.loading = false;
         this.error = true;
@@ -107,16 +115,38 @@ export default {
     toArtwork(id) {
       this.$router.push({
         name: "Artwork",
-        params: { id, list: this.artList }
+        params: { id, list: this.artList },
       });
     },
     onClick() {
       this.$emit("onCilck");
-    }
+    },
+    resize() {
+      if (!this.$refs.cardBox) return;
+      const clientWidth = document.documentElement.clientWidth;
+
+      if (clientWidth < 375) {
+        this.col = 1;
+      } else if (clientWidth <= 768) {
+        this.col = 2;
+      } else if (clientWidth <= 1600) {
+        this.col = 3;
+      } else {
+        this.col = 4;
+      }
+
+      this.itemWidth = Math.floor(
+        this.$refs.cardBox.firstChild.clientWidth / this.col
+      );
+    },
   },
   mounted() {
     this.reset();
     this.getMemberFavorite();
+    window.addEventListener("resize", this.resize);
+  },
+  beforeUnmount() {
+    window.removeEventListener("resize", this.resize);
   },
   components: {
     [Cell.name]: Cell,
@@ -125,8 +155,8 @@ export default {
     [Icon.name]: Icon,
     [List.name]: List,
     [PullRefresh.name]: PullRefresh,
-    ImageCard
-  }
+    ImageCard,
+  },
 };
 </script>
 
@@ -142,18 +172,18 @@ export default {
     color: #888;
   }
 
-  .card-box {
-    padding: 0 12px;
-    display: flex;
-    flex-direction: row;
+  .card-box__wrapper {
+    width: 100%;
 
-    .column {
-      width: 50%;
+    .card-box {
+      display: flex;
+      flex-direction: row;
+    }
 
-      .image-card {
-        max-height: 360px;
-        margin: 4px 2px;
-      }
+    .image-card {
+      max-height: 500px;
+      margin: 14px 6px;
+      border: 1px solid #ebebeb;
     }
   }
 }

@@ -1,5 +1,21 @@
 <template>
   <div class="user-container">
+    <div class="illust-wrap" v-if="showNovels">
+      <div class="illust">
+        <TopBar
+          :action="
+            () => {
+              showNovels = false;
+            }
+          "
+        />
+        <AuthorNovels
+          v-if="userInfo.id"
+          :id="userInfo.id"
+          key="multi-novel"
+        />
+      </div>
+    </div>
     <div class="illust-wrap" v-if="showIllusts">
       <div class="illust">
         <TopBar
@@ -32,7 +48,10 @@
         />
       </div>
     </div>
-    <div class="user-wrap" v-show="!showIllusts && !showFavorite">
+    <div
+      class="user-wrap"
+      v-show="!showIllusts && !showFavorite && !showNovels"
+    >
       <div class="users">
         <TopBar />
         <div class="info-container" v-if="userInfo.id">
@@ -86,6 +105,14 @@
             </div>
           </div>
         </div>
+        <AuthorNovels
+          v-if="userInfo.id"
+          :id="userInfo.id"
+          :num="userInfo.novels"
+          :once="true"
+          @onCilck="showSub('novels')"
+          key="once-novel"
+        />
         <AuthorIllusts
           v-if="userInfo.id"
           :id="userInfo.id"
@@ -109,6 +136,7 @@
 
 <script>
 import TopBar from "@/components/TopBar";
+import AuthorNovels from "./components/AuthorNovels";
 import AuthorIllusts from "./components/AuthorIllusts";
 import FavoriteIllusts from "./components/FavoriteIllusts";
 import api from "@/api";
@@ -131,6 +159,7 @@ export default {
       loading: false,
       userInfo: {},
       isEx: false,
+      showNovels: false,
       showIllusts: false,
       showFavorite: false,
       commentHeight: 0,
@@ -170,6 +199,10 @@ export default {
           this.showFavorite = true;
           break;
 
+        case "novels":
+          this.showNovels = true;
+          break;
+
         default:
           break;
       }
@@ -187,6 +220,7 @@ export default {
   },
   components: {
     TopBar,
+    AuthorNovels,
     AuthorIllusts,
     FavoriteIllusts,
   },

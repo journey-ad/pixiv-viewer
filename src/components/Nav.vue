@@ -1,41 +1,20 @@
 <template>
   <div class="nav-container">
     <ul class="nav-bar">
-      <li @click="navigateTo('Home')">
-        <Icon
-          class="icon home"
-          name="home"
-          index="Home"
-          :currentIndex="$route.name"
-        />
-        <span>首页</span>
-      </li>
-      <li @click="navigateTo('Search')">
+      <li
+        class="nav-item"
+        :class="{ active: $route.name === item.name }"
+        @click="navigateTo(item.name)"
+        v-for="item in navList"
+        :key="item.name"
+      >
         <Icon
           class="icon"
-          name="search"
-          index="Search"
+          :name="item.icon"
+          :index="item.name"
           :currentIndex="$route.name"
         />
-        <span>搜索</span>
-      </li>
-      <li @click="navigateTo('Rank', { type: 'daily' })">
-        <Icon
-          class="icon"
-          name="rank"
-          index="Rank"
-          :currentIndex="$route.name"
-        />
-        <span>排行榜</span>
-      </li>
-      <li @click="navigateTo('Setting')">
-        <Icon
-          class="icon"
-          name="setting"
-          index="Setting"
-          :currentIndex="$route.name"
-        />
-        <span>设置</span>
+        <span>{{ item.title }}</span>
       </li>
     </ul>
   </div>
@@ -44,7 +23,35 @@
 <script>
 export default {
   data() {
-    return {};
+    return {
+      navList: [
+        {
+          name: "Home",
+          icon: "home",
+          title: "首页",
+        },
+        // {
+        //   name: "Novel",
+        //   icon: "novel",
+        //   title: "小说",
+        // },
+        {
+          name: "Search",
+          icon: "search",
+          title: "搜索",
+        },
+        {
+          name: "Rank",
+          icon: "rank",
+          title: "排行榜",
+        },
+        {
+          name: "Setting",
+          icon: "setting",
+          title: "设置",
+        },
+      ],
+    };
   },
   methods: {
     navigateTo(name, params) {
@@ -70,6 +77,7 @@ export default {
   height: 100px;
   height: calc(100px + env(safe-area-inset-bottom));
   z-index: 10;
+  pointer-events: none;
 
   .nav-bar {
     display: flex;
@@ -83,16 +91,21 @@ export default {
     min-width: 750px;
     height: 100%;
     margin: 0 auto;
+    pointer-events: auto;
 
     li {
       position: relative;
-      color: #777;
+      color: #969696;
       font-size: 20px;
       cursor: pointer;
       width: 20%;
       vertical-align: middle;
       text-align: center;
       margin: 0 10px;
+
+      &.active {
+        color: #333;
+      }
 
       .icon {
         display: block;
