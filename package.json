@@ -24,7 +24,7 @@
     "swiper": "^5.3.6",
     "v-calendar": "^1.0.3",
     "vant": "^2.13.2",
-    "vue": "^2.6.14",
+    "vue": "^2.7.15",
     "vue-awesome-swiper": "^4.1.0",
     "vue-concise-slider": "^3.4.4",
     "vue-moment": "^4.1.0",
@@ -37,7 +37,6 @@
     "@vue/cli-plugin-babel": "^4.5.19",
     "@vue/cli-plugin-eslint": "^4.5.19",
     "@vue/cli-service": "^4.5.19",
-    "@vue/compiler-sfc": "^2.7.15",
     "babel-eslint": "^10.0.3",
     "babel-plugin-import": "^1.13.0",
     "eslint": "^6.7.2",
@@ -46,7 +45,7 @@
     "stylus": "^0.54.7",
     "stylus-loader": "^3.0.2",
     "vue-svg-icon": "^1.2.9",
-    "vue-template-compiler": "^2.6.14"
+    "vue-template-compiler": "^2.7.15"
   },
   "pwa": {
     "name": "pixiv-viewer",
