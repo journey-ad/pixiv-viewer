@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "./precache-manifest.b434ac7f8c37ff54fc04e78bc06e2c7a.js"
+  "./precache-manifest.e00c54df455268d90fdcbfdfd63afdd0.js"
 );
 
 workbox.core.setCacheNameDetails({prefix: "pixiv-viewer"});
