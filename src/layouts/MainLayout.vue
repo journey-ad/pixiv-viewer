@@ -32,7 +32,9 @@ export default {
   watch: {
     showNav: {
       handler(val) {
-        this.$root.$el.classList[val ? "add" : "remove"]("show-nav");
+        this.$nextTick(() => {
+          this.$root.$el.classList[val ? "add" : "remove"]("show-nav");
+        });
       },
       immediate: true,
     },

@@ -545,7 +545,7 @@ export default {
       align-items: center;
       border-radius: 999px;
       overflow: hidden;
-      outline: 1px solid #eee;
+      outline: 1PX solid #eee;
 
       .seacch-type__item {
         display: flex;

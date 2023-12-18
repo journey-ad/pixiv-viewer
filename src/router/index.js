@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-// import Home from '../views/Home.vue'
+import { setThemeColor } from '@/utils';
 
 import BaseLayout from '@/layouts/BaseLayout'
 import MainLayout from '@/layouts/MainLayout'
@@ -103,6 +103,9 @@ const router = new VueRouter({
 
 router.beforeEach((to, from, next) => {
   document.title = to.meta.title || 'pixiv-viewer'
+
+  setThemeColor(to.meta.themeColor || '#fff')
+
   next()
 })
 

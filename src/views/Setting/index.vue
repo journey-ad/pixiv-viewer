@@ -30,17 +30,26 @@
       label="API地址"
       placeholder="填写一个可用的API地址"
     />
+    <van-cell
+      center
+      title="Pixiv Viewer"
+      label="https://github.com/journey-ad/pixiv-viewer"
+      url="https://github.com/journey-ad/pixiv-viewer"
+    ></van-cell>
+    <van-cell center title="构建日期" :label="buildDate"></van-cell>
   </div>
 </template>
 
 <script>
 import { Cell, Switch, Button, Dialog, Field } from "vant";
 import { mapState, mapActions } from "vuex";
+import { dateFormat } from "@/utils";
 import { DBStorage, SessionStorage } from "@/utils/storage";
 export default {
   name: "Setting",
   data() {
     return {
+      buildDate: dateFormat(__BUILD_TIMESTAMP__, "yyyy-MM-dd"),
       currentSETTING: {
         api: "https://hibiapi.journeyad.repl.co/api/",
         r18: false,

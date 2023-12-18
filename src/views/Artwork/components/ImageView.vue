@@ -588,9 +588,9 @@ export default {
 
 .preview-action__wrapper {
   position: fixed;
-  right: 50px;
-  bottom: 60px;
-  bottom: calc(60px + env(safe-area-inset-bottom));
+  right: 40px;
+  bottom: 40px;
+  bottom: calc(40px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -600,8 +600,8 @@ export default {
     font-size: 0;
 
     svg {
-      width: 70px;
-      height: 70px;
+      width: 100px;
+      height: 100px;
     }
   }
 }

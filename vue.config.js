@@ -17,6 +17,16 @@ module.exports = {
       .tap(args => {
         args.compilerOptions.whitespace = 'preserve'
       })
+
+    config
+      .plugin('define')
+      .tap(args => {
+        args[0] = {
+          ...args[0],
+          __BUILD_TIMESTAMP__: JSON.stringify(Date.now() / 1000 | 0),
+        }
+        return args
+      })
   },
   css: {
     loaderOptions: {

@@ -1,5 +1,5 @@
 <template>
-  <div class="chapter" v-if="novel.id" @scroll="scrollHandler" ref="chapterEl">
+  <div class="chapter" @scroll="scrollHandler" ref="chapterEl">
     <div class="topbar__wrapper" :class="{ show: isActionShow }">
       <div class="chapter-name">{{ novel.title }}</div>
       <TopBar :transparent="true" color="dark" :padding="false" />
@@ -15,66 +15,71 @@
       }"
       @click="handleActionDisplay"
     >
-      <div class="novel-meta">
-        <h1 class="novel-title">
-          <van-tag
-            class="tag"
-            round
-            :color="tagText === 'R-18' ? '#fb7299' : '#ff3f3f'"
-            v-if="tagText"
-          >
-            {{ tagText }}
-          </van-tag>
-          {{ novel.title }}
-        </h1>
-        <div class="info-box">
-          <router-link
-            class="info author"
-            :to="{
-              name: 'Users',
-              params: { id: novel.user.id },
-            }"
-          >
-            {{ novel.user.name }}
-          </router-link>
-          <span class="info words">
-            <Icon name="novel" class="icon" scale="1.1"></Icon
-            >{{ novel.text_length.toLocaleString("en-US") }}字
-          </span>
-          <span class="info like">
-            <Icon name="like" class="icon"></Icon>
-            {{ novel.like.toLocaleString("en-US") }}
-          </span>
-          <span class="pixiv">
-            <a
-              :href="`https://www.pixiv.net/novel/show.php?id=${novel.id}`"
-              target="_blank"
-              rel="noreferrer"
-              title="前往Pixiv查看作品"
+      <transition name="fade">
+        <div class="loading" v-if="loading">加载中...</div>
+      </transition>
+      <template v-if="!loading">
+        <div class="novel-meta" v-if="novel.id">
+          <h1 class="novel-title">
+            <van-tag
+              class="tag"
+              round
+              :color="tagText === 'R-18' ? '#fb7299' : '#ff3f3f'"
+              v-if="tagText"
             >
-              <Icon name="pixiv" class="icon"></Icon>
-            </a>
-          </span>
+              {{ tagText }}
+            </van-tag>
+            {{ novel.title }}
+          </h1>
+          <div class="info-box">
+            <router-link
+              class="info author"
+              :to="{
+                name: 'Users',
+                params: { id: novel.user.id },
+              }"
+            >
+              {{ novel.user.name }}
+            </router-link>
+            <span class="info words">
+              <Icon name="novel" class="icon" scale="1.1"></Icon
+              >{{ novel.text_length.toLocaleString("en-US") }}字
+            </span>
+            <span class="info like">
+              <Icon name="like" class="icon"></Icon>
+              {{ novel.like.toLocaleString("en-US") }}
+            </span>
+            <span class="pixiv">
+              <a
+                :href="`https://www.pixiv.net/novel/show.php?id=${novel.id}`"
+                target="_blank"
+                rel="noreferrer"
+                title="前往Pixiv查看作品"
+              >
+                <Icon name="pixiv" class="icon"></Icon>
+              </a>
+            </span>
+          </div>
+          <div class="tag-box">
+            <router-link
+              class="tag"
+              :to="{
+                name: 'Search',
+                query: { type: 'novel', keyword: tag.name },
+              }"
+              v-for="tag in novel.tags"
+              :key="tag.name"
+              >#{{ tag.name }}</router-link
+            >
+          </div>
         </div>
-        <div class="tag-box">
-          <router-link
-            class="tag"
-            :to="{
-              name: 'Search',
-              query: { type: 'novel', keyword: tag.name },
-            }"
-            v-for="tag in novel.tags"
-            :key="tag.name"
-            >#{{ tag.name }}</router-link
-          >
-        </div>
-      </div>
-      <div
-        class="novel-content"
-        :class="{ censored: isCensored(novel) }"
-        :style="viewerStyle"
-        v-html="parsedContent"
-      ></div>
+        <div
+          class="novel-content"
+          :class="{ censored: isCensored(novel) }"
+          :style="viewerStyle"
+          v-html="parsedContent"
+        ></div>
+      </template>
     </div>
     <div class="action__wrapper" :class="{ show: isSettingShow }">
       <transition name="fade">
@@ -171,12 +176,13 @@ import { debounce } from "lodash";
 import { Tag, Slider } from "vant";
 import { mapGetters, mapState } from "vuex";
 import TopBar from "@/components/TopBar";
+import { setThemeColor } from "@/utils";
 import { LocalStorage } from "@/utils/storage";
 import api from "@/api";
 
 const _READER_SETTING_KEY = "__PIXIV_readerSetting";
 
-const readerSetting = LocalStorage.get(_READER_SETTING_KEY, {
+let readerSetting = LocalStorage.get(_READER_SETTING_KEY, {
   fontSize: 15,
   padding: 14,
   lineHeight: 1.5,
@@ -206,14 +212,19 @@ export default {
     },
     readerConfig: {
       handler: debounce(function () {
-        const _setings = {};
         for (let key in this.readerConfig) {
-          _setings[key] = this.readerConfig[key].value;
+          readerSetting[key] = this.readerConfig[key].value;
         }
 
-        LocalStorage.set(_READER_SETTING_KEY, _setings);
+        LocalStorage.set(_READER_SETTING_KEY, readerSetting);
       }, 300),
       deep: true,
+    },
+    "viewerStyle.backgroundColor": {
+      handler() {
+        setThemeColor(this.viewerStyle.backgroundColor);
+      },
+      immediate: true,
     },
   },
   data() {
@@ -302,22 +313,26 @@ export default {
       }
     },
     init() {
+      this.reset();
       this.initSetting();
+      setThemeColor(this.viewerStyle.backgroundColor);
       document.documentElement.scrollTo({ top: 0, behavior: "smooth" });
-      this.loading = true;
       const id = +this.$route.params.id;
-      this.novel = {};
       this.getNovel(id);
     },
+    reset() {
+      this.loading = false;
+      this.novel = {};
+      this.parsedContent = "";
+    },
     async getNovel(id) {
+      this.loading = true;
       const res = await api.getNovel(id);
 
       if (res.status === 0) {
         this.novel = res.data;
 
         this.parseNovel(this.novel);
-
-        this.loading = false;
 
         let title = "";
         if (this.novel.x_restrict === 1) {
@@ -328,11 +343,11 @@ export default {
 
         title += `${this.novel.title}`;
 
-        if (this.novel.series) {
+        if (this.novel.series?.title) {
           title += ` | ${this.novel.series.title}`;
         }
 
-        if (this.novel.user) {
+        if (this.novel.user?.name) {
           title += ` /「${this.novel.user.name}」的作品`;
         }
 
@@ -351,6 +366,8 @@ export default {
           }, 5000);
         }
       }
+
+      this.loading = false;
     },
     parseNovel(novel) {
       let content = novel.content;
@@ -498,10 +515,24 @@ export default {
 }
 
 .novel-content__wrapper {
+  position: relative;
   min-height: 100%;
   overflow: hidden;
   transition: color 0.3s, background 0.3s;
   user-select: text;
+  padding-bottom: 400px;
+  box-sizing: border-box;
+
+  .loading {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    font-size: 34px;
+    color: #1f1f1f;
+  }
 
   .novel-meta {
     color: #1f1f1f;
