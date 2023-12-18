@@ -15,6 +15,7 @@
     "file-saver": "^2.0.2",
     "gif.js": "^0.2.0",
     "gifshot": "^0.4.5",
+    "gsap": "^3.12.4",
     "js-base64": "^2.5.2",
     "jszip": "^3.4.0",
     "localforage": "^1.10.0",

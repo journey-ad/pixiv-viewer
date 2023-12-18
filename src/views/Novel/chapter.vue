@@ -9,79 +9,28 @@
     </div>
     <div
       class="novel-content__wrapper"
-      :style="{
-        fontFamily: fontList[readerConfig.fontFamily.value].font,
-        backgroundColor: themeList[readerConfig.theme.value].bg,
-      }"
-      @click="handleActionDisplay"
+      :style="viewerStyle"
+      @touchstart="handleTouchStart"
+      @touchmove="handleTouchMove"
+      @touchend="handleTouchEnd"
+      @click="handleClickViewer"
+      ref="novelContentWrapper"
     >
       <transition name="fade">
         <div class="loading" v-if="loading">加载中...</div>
       </transition>
+      <!-- <NovelMeta :novel="novel" /> -->
       <template v-if="!loading">
-        <div class="novel-meta" v-if="novel.id">
-          <h1 class="novel-title">
-            <van-tag
-              class="tag"
-              round
-              :color="tagText === 'R-18' ? '#fb7299' : '#ff3f3f'"
-              v-if="tagText"
-            >
-              {{ tagText }}
-            </van-tag>
-            {{ novel.title }}
-          </h1>
-          <div class="info-box">
-            <router-link
-              class="info author"
-              :to="{
-                name: 'Users',
-                params: { id: novel.user.id },
-              }"
-            >
-              {{ novel.user.name }}
-            </router-link>
-            <span class="info words">
-              <Icon name="novel" class="icon" scale="1.1"></Icon
-              >{{ novel.text_length.toLocaleString("en-US") }}字
-            </span>
-            <span class="info like">
-              <Icon name="like" class="icon"></Icon>
-              {{ novel.like.toLocaleString("en-US") }}
-            </span>
-            <span class="pixiv">
-              <a
-                :href="`https://www.pixiv.net/novel/show.php?id=${novel.id}`"
-                target="_blank"
-                rel="noreferrer"
-                title="前往Pixiv查看作品"
-              >
-                <Icon name="pixiv" class="icon"></Icon>
-              </a>
-            </span>
-          </div>
-          <div class="tag-box">
-            <router-link
-              class="tag"
-              :to="{
-                name: 'Search',
-                query: { type: 'novel', keyword: tag.name },
-              }"
-              v-for="tag in novel.tags"
-              :key="tag.name"
-              >#{{ tag.name }}</router-link
-            >
-          </div>
-        </div>
         <div
           class="novel-content"
           :class="{ censored: isCensored(novel) }"
-          :style="viewerStyle"
           v-html="parsedContent"
+          ref="novelContentEl"
         ></div>
+        <div class="page">{{ `${page} / ${total}` }}</div>
       </template>
     </div>
-    <div class="action__wrapper" :class="{ show: isSettingShow }">
+    <div class="setting__wrapper" :class="{ show: isSettingShow }">
       <transition name="fade">
         <div
           class="back-top"
@@ -172,13 +121,16 @@
 </template>
 
 <script>
+import Vue from "vue";
 import { debounce } from "lodash";
 import { Tag, Slider } from "vant";
 import { mapGetters, mapState } from "vuex";
 import TopBar from "@/components/TopBar";
+import NovelMeta from "./components/novel-meta.vue";
 import { setThemeColor } from "@/utils";
 import { LocalStorage } from "@/utils/storage";
 import api from "@/api";
+import gsap from "gsap";
 
 const _READER_SETTING_KEY = "__PIXIV_readerSetting";
 
@@ -220,11 +172,13 @@ export default {
       }, 300),
       deep: true,
     },
-    "viewerStyle.backgroundColor": {
-      handler() {
+    viewerStyle: {
+      handler: debounce(function () {
         setThemeColor(this.viewerStyle.backgroundColor);
-      },
+        this.calcPageNum();
+      }),
       immediate: true,
+      deep: true,
     },
   },
   data() {
@@ -279,6 +233,8 @@ export default {
       isSettingShow: false,
       isActionShow: false,
       isTopShow: false,
+      page: 1,
+      total: 1,
     };
   },
   computed: {
@@ -294,8 +250,13 @@ export default {
     },
     viewerStyle() {
       return {
-        paddingLeft: `${this.readerConfig.padding.value}px`,
-        paddingRight: `${this.readerConfig.padding.value}px`,
+        "--padding": `${this.readerConfig.padding.value}px`,
+        "--lineHeight": `${this.readerConfig.lineHeight.value}`,
+        "--fontSize": `${this.readerConfig.fontSize.value}px`,
+        "--color": this.themeList[this.readerConfig.theme.value].color,
+        "--bg": this.themeList[this.readerConfig.theme.value].bg,
+        paddingLeft: `var(--padding)`,
+        paddingRight: `var(--padding)`,
         fontSize: `${this.readerConfig.fontSize.value}px`,
         lineHeight: `${this.readerConfig.lineHeight.value}`,
         fontFamily: this.fontList[this.readerConfig.fontFamily.value].font,
@@ -406,10 +367,174 @@ export default {
 
       content = content.split("\n").map(parseLine).join("");
 
+      content = `<div class="novel-content__header"></div>
+        <div class="novel-content__content">${content}</div>
+        <div class="novel-content__footer">`;
+
       this.parsedContent = content;
+
+      this.$nextTick(() => {
+        const metaEL = this.$refs.novelContentEl.querySelector(
+          ".novel-content__header"
+        );
+        NovelMeta.router = this.$router;
+        const metaComp = Vue.extend(NovelMeta);
+        new metaComp({ propsData: { novel } }).$mount(metaEL);
+
+        setTimeout(() => {
+          this.calcPageNum();
+        }, 0);
+      });
+    },
+    calcPageNum() {
+      const wrapEL = this.$refs.novelContentWrapper;
+      if (!wrapEL) return;
+
+      this.total = Math.floor(
+        wrapEL.scrollWidth / (wrapEL.clientWidth - readerSetting.padding)
+      );
+    },
+    changePage(index) {
+      if (index < 1 || index > this.total) return (this.isActionShow = true);
+
+      const wrapEL = this.$refs.novelContentWrapper;
+      const pageWidth = wrapEL.clientWidth - readerSetting.padding;
+
+      gsap.to(wrapEL, {
+        duration: 0.2,
+        ease: "power1.inOut",
+        scrollLeft: pageWidth * (index - 1),
+      });
+
+      this.page = index;
+
+      console.log(
+        "changePage",
+        [this.page, this.total],
+        [wrapEL.scrollLeft, wrapEL.scrollWidth],
+        pageWidth
+      );
+    },
+    addPage(num) {
+      this.changePage(this.page + num);
     },
     toTop() {
       this.$refs.chapterEl.scrollTo({ top: 0, behavior: "smooth" });
+    },
+    handleClickViewer(e) {
+      // 检测点击位置区域
+      const { clientWidth, clientHeight } = this.$refs.chapterEl;
+      const { clientX, clientY } = e;
+
+      // 定义每个区域位置 使用左上角和右下角坐标确定
+      const areaAxis = {
+        // 顶部区域
+        top: [
+          [0, 0],
+          [1, 0.4],
+        ],
+        // 底部左侧较窄区域
+        back: [
+          [0, 0.4],
+          [0.3, 1],
+        ],
+        // 底部右侧较窄区域
+        next: [
+          [0.3, 0.4],
+          [1, 1],
+        ],
+      };
+
+      const area = Object.keys(areaAxis).find((key) => {
+        const [min, max] = areaAxis[key];
+        return (
+          clientX / clientWidth >= min[0] && // 区域左侧
+          clientX / clientWidth <= max[0] && // 区域右侧
+          clientY / clientHeight >= min[1] && // 区域顶部
+          clientY / clientHeight <= max[1] // 区域底部
+        );
+      });
+
+      console.log(
+        area,
+        [clientX, clientY], // 坐标点
+        [clientX / clientWidth, clientY / clientHeight], // 相对左上角位置
+        e
+      );
+
+      switch (area) {
+        case "top":
+          this.handleActionDisplay();
+          break;
+        case "back":
+          this.isActionShow = false;
+          this.isSettingShow = false;
+          this.addPage(-1);
+          break;
+        case "next":
+          this.isActionShow = false;
+          this.isSettingShow = false;
+          this.addPage(1);
+          break;
+        default:
+          console.warn("click area detect error");
+          break;
+      }
+    },
+    handleTouchStart() {
+      if (this._locking) return;
+      this._moveDistance = 0;
+    },
+    handleTouchMove(e) {
+      if (this._locking) return;
+
+      const { clientX } = e.touches[0];
+      const wrapEL = this.$refs.novelContentWrapper;
+
+      const lastX = this._lastX || clientX;
+
+      let deltaX = lastX - clientX;
+      this._lastX = clientX;
+
+      // 滑动幅度较大时 乘以一个系数加速滑动
+      if (Math.abs(deltaX) > 2.8) {
+        deltaX *= 2;
+      }
+
+      // 记录滑动距离
+      this._moveDistance += deltaX;
+
+      // 对应移动元素
+      wrapEL.scrollLeft += deltaX;
+    },
+    handleTouchEnd() {
+      const { clientWidth } = this.$refs.novelContentWrapper;
+
+      const lockMove = (ms) => {
+        this._locking = true;
+        setTimeout(() => {
+          this._locking = false;
+        }, ms);
+      };
+
+      // 滑动距离超过容器宽度的0.23倍时 触发翻页
+      if (this._moveDistance < -clientWidth * 0.23) {
+        this.addPage(-1);
+
+        // 每次翻页后锁定移动60ms
+        lockMove(60);
+      } else if (this._moveDistance > clientWidth * 0.23) {
+        this.addPage(1);
+
+        // 每次翻页后锁定移动60ms
+        lockMove(60);
+      } else {
+        // 否则恢复到原来的位置
+        this.changePage(this.page);
+      }
+
+      this._lastX = null;
+      this._moveDistance = 0;
     },
     scrollHandler() {
       const { scrollTop, clientHeight, scrollHeight } = this.$refs.chapterEl;
@@ -516,12 +641,13 @@ export default {
 
 .novel-content__wrapper {
   position: relative;
-  min-height: 100%;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   transition: color 0.3s, background 0.3s;
   user-select: text;
-  padding-bottom: 400px;
   box-sizing: border-box;
+  overflow-x: hidden;
 
   .loading {
     position: absolute;
@@ -534,74 +660,22 @@ export default {
     color: #1f1f1f;
   }
 
-  .novel-meta {
-    color: #1f1f1f;
-    background: #e6f1fa;
-    border: 2px solid #eaeaea;
-    border-radius: 10px;
-    padding: 14px 20px;
-    margin: 25px auto;
-    max-width: calc(100% - 100px);
-    box-shadow: 0px 24px 15px -16px rgba(#000, 0.15);
-
-    .novel-title {
-      font-size: 36px;
-      line-height: 1.4;
-      margin-bottom: 10px;
-
-      .tag {
-        font-size: 24px;
-      }
-    }
-
-    .info-box {
-      display: flex;
-      align-items: center;
-      margin-bottom: 15px;
-
-      .info {
-        display: flex;
-        align-items: center;
-        margin-right: 14px;
-        color: #444;
-        font-size: 24px;
-
-        .icon {
-          color: #ffcd59;
-        }
-      }
-
-      .pixiv {
-        margin-left: 20px;
-        cursor: pointer;
-
-        .icon {
-          width: auto;
-          height: 28px;
-        }
-      }
-    }
-
-    .tag-box {
-      word-break: break-word;
-
-      .tag {
-        display: inline-block;
-        margin-right: 10px;
-        margin-bottom: 4px;
-        font-size: 24px;
-        color: #0096fa;
-      }
-    }
+  .page {
+    position: fixed;
+    right: 15px;
+    bottom: 6px;
+    font-size: 24px;
+    font-family: sans-serif;
+    opacity: 0.65;
   }
 
   .novel-content {
-    padding: 0 20px;
-    font-size: 28px;
-    font-weight: 400;
-    // color: var(--color-fg, #1f1f1f);
-    // background: var(--color-bg, #fff);
-    transition: color 0.3s, background 0.3s;
+    columns: calc(100vw - 2 * var(--padding)) 1;
+    height: 100%;
+    padding: var(--padding) 0;
+    word-break: break-all;
+    column-gap: calc(var(--padding));
+    box-sizing: border-box;
 
     &.censored {
       filter: blur(16px) opacity(0.5);
@@ -609,6 +683,13 @@ export default {
     }
 
     &::v-deep {
+      .novel-content__footer {
+        height: 1px;
+        width: 100%;
+        margin: auto;
+        margin-right: calc(var(--padding) * -1);
+      }
+
       p {
         margin: 1em 0;
       }
@@ -620,7 +701,7 @@ export default {
   }
 }
 
-.action__wrapper {
+.setting__wrapper {
   position: fixed;
   bottom: 0;
   width: 100%;
@@ -750,7 +831,7 @@ export default {
 }
 
 @media screen and (min-width: 768px) {
-  .action__wrapper {
+  .setting__wrapper {
     right: 0;
     width: 600px;
     margin: 0 auto;
