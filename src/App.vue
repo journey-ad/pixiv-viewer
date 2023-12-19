@@ -12,6 +12,7 @@
 
 <script>
 import Preload from "@/components/Preload";
+import { mapState, mapActions } from "vuex";
 
 export default {
   name: "App",
@@ -20,7 +21,11 @@ export default {
       isTopShow: false,
     };
   },
+  computed: {
+    ...mapState(["SETTING"]),
+  },
   methods: {
+    ...mapActions(["saveSETTING"]),
     toTop() {
       document.documentElement.scrollTo({ top: 0, behavior: "smooth" });
     },
@@ -31,6 +36,16 @@ export default {
         this.isTopShow = false;
       }
     },
+  },
+  beforeMount() {
+    const { r18 } = this.$route.query;
+
+    if (+r18 === 1) {
+      this.saveSETTING({
+        ...this.SETTING,
+        r18: true,
+      });
+    }
   },
   mounted() {
     window.addEventListener("scroll", this.scrollHandler);
