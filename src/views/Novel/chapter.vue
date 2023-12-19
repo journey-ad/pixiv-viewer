@@ -10,10 +10,10 @@
     <div
       class="novel-content__wrapper"
       :style="viewerStyle"
-      @touchstart="handleTouchStart"
-      @touchmove="handleTouchMove"
-      @touchend="handleTouchEnd"
-      @click="handleClickViewer"
+      @pointerdown.prevent.stop="handleTouchStart"
+      @pointermove.prevent.stop="handleTouchMove"
+      @pointerup.prevent.stop="handleTouchEnd"
+      v-prevent="['touchstart', 'touchmove', 'touchend', 'mousedown', 'mousemove', 'mouseup', 'click']"
       ref="novelContentWrapper"
     >
       <transition name="fade">
@@ -32,11 +32,7 @@
     </div>
     <div class="setting__wrapper" :class="{ show: isSettingShow }">
       <transition name="fade">
-        <div
-          class="back-top"
-          :class="{ show: isTopShow && isActionShow }"
-          @click="toTop"
-        >
+        <div class="back-top" :class="{ show: isTopShow && isActionShow }" @click="toTop">
           <Icon class="icon-top" name="top"></Icon>
         </div>
       </transition>
@@ -98,8 +94,7 @@
             @click="readerConfig.theme.value = index"
             v-for="(item, index) in themeList"
             :key="index"
-            >字</span
-          >
+          >字</span>
         </div>
         <div class="action-item">
           <span>选择字体</span>
@@ -112,8 +107,7 @@
             @click="readerConfig.fontFamily.value = index"
             v-for="(item, index) in fontList"
             :key="index"
-            >{{ item.name }}</span
-          >
+          >{{ item.name }}</span>
         </div>
       </div>
     </div>
@@ -395,18 +389,36 @@ export default {
       );
     },
     changePage(index) {
-      if (index < 1 || index > this.total) return (this.isActionShow = true);
+      // 已经是首尾 仍然继续翻页时 提示已经到头了
+      if (index < 1 || index > this.total) {
+        this.isActionShow = true;
+
+        this.$toast({
+          message: index < 1 ? "已经是第一页了" : "已经是最后一页了",
+          duration: 2000,
+        });
+        return;
+      }
+
+      // 从首尾往回翻页时 隐藏顶栏
+      if (
+        (this.page === this.total && index < this.total) ||
+        (this.page === 1 && index > 1)
+      ) {
+        this.isActionShow = false;
+      }
+
+      this.page = index;
 
       const wrapEL = this.$refs.novelContentWrapper;
       const pageWidth = wrapEL.clientWidth - readerSetting.padding;
 
-      gsap.to(wrapEL, {
+      if (wrapEL._gsapInstance) wrapEL._gsapInstance.pause().kill();
+      wrapEL._gsapInstance = gsap.to(wrapEL, {
         duration: 0.2,
         ease: "power1.inOut",
         scrollLeft: pageWidth * (index - 1),
       });
-
-      this.page = index;
 
       console.log(
         "changePage",
@@ -428,19 +440,24 @@ export default {
 
       // 定义每个区域位置 使用左上角和右下角坐标确定
       const areaAxis = {
-        // 顶部区域
+        // 顶部区域 宽0.8 高0.3
         top: [
           [0, 0],
-          [1, 0.4],
+          [0.8, 0.3],
         ],
-        // 底部左侧较窄区域
+        // 中心区域 宽0.2 高0.2
+        center: [
+          [0.4, 0.4],
+          [0.6, 0.6],
+        ],
+        // 底部左侧较窄区域 宽0.3 高0.7
         back: [
-          [0, 0.4],
+          [0, 0.3],
           [0.3, 1],
         ],
-        // 底部右侧较窄区域
+        // 剩余区域
         next: [
-          [0.3, 0.4],
+          [0, 0],
           [1, 1],
         ],
       };
@@ -464,6 +481,7 @@ export default {
 
       switch (area) {
         case "top":
+        case "center":
           this.handleActionDisplay();
           break;
         case "back":
@@ -481,14 +499,16 @@ export default {
           break;
       }
     },
-    handleTouchStart() {
-      if (this._locking) return;
+    handleTouchStart(e) {
       this._moveDistance = 0;
+      this._startTime = Date.now();
+      this._isTouching = true;
     },
     handleTouchMove(e) {
+      if (!this._isTouching) return;
       if (this._locking) return;
 
-      const { clientX } = e.touches[0];
+      const { clientX } = e;
       const wrapEL = this.$refs.novelContentWrapper;
 
       const lastX = this._lastX || clientX;
@@ -497,8 +517,11 @@ export default {
       this._lastX = clientX;
 
       // 滑动幅度较大时 乘以一个系数加速滑动
-      if (Math.abs(deltaX) > 2.8) {
-        deltaX *= 2;
+      const deltaX_abs = Math.abs(deltaX);
+      if (deltaX_abs > 1.8) {
+        deltaX *= 1.5;
+      } else if (deltaX_abs > 1.3) {
+        deltaX *= 1.1;
       }
 
       // 记录滑动距离
@@ -507,30 +530,48 @@ export default {
       // 对应移动元素
       wrapEL.scrollLeft += deltaX;
     },
-    handleTouchEnd() {
-      const { clientWidth } = this.$refs.novelContentWrapper;
+    handleTouchEnd(e) {
+      this._isTouching = false;
 
+      // 锁定移动
       const lockMove = (ms) => {
         this._locking = true;
-        setTimeout(() => {
+        if (this._lockTimer) clearTimeout(this._lockTimer);
+        this._lockTimer = setTimeout(() => {
           this._locking = false;
         }, ms);
       };
 
-      // 滑动距离超过容器宽度的0.23倍时 触发翻页
-      if (this._moveDistance < -clientWidth * 0.23) {
-        this.addPage(-1);
+      // 根据滑动距离判断翻页
+      const handleSwipe = (threshold = 0.35) => {
+        if (this._moveDistance < -clientWidth * threshold) {
+          this.addPage(-1);
+        } else if (this._moveDistance > clientWidth * threshold) {
+          this.addPage(1);
+        } else {
+          // 否则恢复到原来的位置
+          this.changePage(this.page);
+        }
+      };
 
-        // 每次翻页后锁定移动60ms
-        lockMove(60);
-      } else if (this._moveDistance > clientWidth * 0.23) {
-        this.addPage(1);
+      // 处理点击操作
+      if (
+        Date.now() - this._startTime < 90 &&
+        Math.abs(this._moveDistance) < 10
+      ) {
+        lockMove(200); // 点击翻页时 锁定200ms 防止手滑变成滑动翻页
+        this.handleClickViewer(e);
+        return;
+      }
 
-        // 每次翻页后锁定移动60ms
-        lockMove(60);
+      const { clientWidth } = this.$refs.novelContentWrapper;
+
+      if (Date.now() - this._startTime <= 200) {
+        // 快速滑动时 触发翻页距离缩短
+        handleSwipe(0.06);
       } else {
-        // 否则恢复到原来的位置
-        this.changePage(this.page);
+        // 慢慢滑动时 正常计算翻页所需距离
+        handleSwipe(0.35);
       }
 
       this._lastX = null;
@@ -558,6 +599,22 @@ export default {
       } else {
         this.isActionShow = true;
       }
+    },
+  },
+  directives: {
+    prevent: {
+      inserted(el, binding) {
+        const evtList = binding.value || [];
+
+        console.log("prevent", evtList);
+
+        evtList.forEach((evt) => {
+          el.addEventListener(evt, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          });
+        });
+      },
     },
   },
   mounted() {
