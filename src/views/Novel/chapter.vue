@@ -17,10 +17,7 @@
       @pointerdown.prevent.stop="handleTouchStart"
       @pointermove.stop.prevent="handleTouchMove"
       @pointerup.prevent.stop="handleTouchEnd"
-      @scroll.stop.prevent
-      @touchmove.stop.prevent
-      @mousemove.stop.prevent
-      v1-prevent="['touchmove','mousemove']"
+      v-prevent="['touchmove','mousemove']"
       ref="novelContentWrapper"
     >
       <!-- <NovelMeta :novel="novel" /> -->
@@ -86,7 +83,7 @@
           </div>
         </div>
         <div class="action-item">
-          <span>选择颜色</span>
+          <span class="label">选择颜色</span>
           <span
             class="color"
             :class="{ active: readerConfig.theme.value === index }"
@@ -100,7 +97,7 @@
           >字</span>
         </div>
         <div class="action-item">
-          <span>选择字体</span>
+          <span class="label">选择字体</span>
           <span
             class="font"
             :class="{ active: readerConfig.fontFamily.value === index }"
@@ -111,6 +108,14 @@
             v-for="(item, index) in fontList"
             :key="index"
           >{{ item.name }}</span>
+        </div>
+        <div class="action-item">
+          <span class="label">文字样式</span>
+          <span
+            class="bold-switch"
+            :class="{ active: readerConfig.bold.value }"
+            @click="readerConfig.bold.value = !readerConfig.bold.value"
+          >B</span>
         </div>
       </div>
     </div>
@@ -137,6 +142,7 @@ let readerSetting = LocalStorage.get(_READER_SETTING_KEY, {
   lineHeight: 1.5,
   theme: 0,
   fontFamily: 0,
+  bold: false,
 });
 
 export default {
@@ -209,6 +215,10 @@ export default {
           value: 1,
           range: [0, 3],
         },
+        bold: {
+          type: "boolean",
+          value: false,
+        },
       },
       themeList: [
         { color: "#1f1f1f", bg: "#ffffff" },
@@ -257,6 +267,7 @@ export default {
         fontSize: `${this.readerConfig.fontSize.value}px`,
         lineHeight: `${this.readerConfig.lineHeight.value}`,
         fontFamily: this.fontList[this.readerConfig.fontFamily.value].font,
+        fontWeight: this.readerConfig.bold.value ? "bold" : "normal",
         color: this.themeList[this.readerConfig.theme.value].color,
         backgroundColor: this.themeList[this.readerConfig.theme.value].bg,
       };
@@ -647,7 +658,7 @@ export default {
 </script>
 
 <style lang="stylus">
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&family=Noto+Serif+SC:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600&family=Noto+Serif+SC:wght@500;700&display=swap');
 
 :root {
   --color-fg: #1f1f1f;
@@ -795,6 +806,7 @@ export default {
   filter: drop-shadow(0px -5px 14px rgba(#000, 0.1));
   transform: translateY(calc(100% + 100px));
   transition: transform 0.3s ease-in-out;
+  z-index: 50;
 
   &.show {
     transform: translateY(0);
@@ -853,6 +865,14 @@ export default {
       }
     }
 
+    .label {
+      margin-right: 10px;
+
+      & ~ span {
+        margin-left: 10px;
+      }
+    }
+
     .color {
       display: flex;
       justify-content: center;
@@ -885,6 +905,24 @@ export default {
       cursor: pointer;
 
       &.active {
+        border-color: #ffcd59;
+      }
+    }
+
+    .bold-switch {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 50px;
+      height: 42px;
+      font-size: 24px;
+      line-height: 1;
+      border: 2px solid #a6a6a6;
+      border-radius: 10px;
+      cursor: pointer;
+
+      &.active {
+        font-weight: bold;
         border-color: #ffcd59;
       }
     }

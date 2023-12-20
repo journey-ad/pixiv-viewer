@@ -6,9 +6,7 @@
         round
         :color="tagText === 'R-18' ? '#fb7299' : '#ff3f3f'"
         v-if="tagText"
-      >
-        {{ tagText }}
-      </van-tag>
+      >{{ tagText }}</van-tag>
       {{ novel.title }}
     </h1>
     <div class="info-box">
@@ -18,12 +16,10 @@
           name: 'Users',
           params: { id: novel.user.id },
         }"
-      >
-        {{ novel.user.name }}
-      </router-link>
+      >{{ novel.user.name }}</router-link>
       <span class="info words">
-        <Icon name="novel" class="icon" scale="1.1"></Icon
-        >{{ novel.text_length.toLocaleString("en-US") }}字
+        <Icon name="novel" class="icon" scale="1.1"></Icon>
+        {{ novel.text_length.toLocaleString("en-US") }}字
       </span>
       <span class="info like">
         <Icon name="like" class="icon"></Icon>
@@ -49,8 +45,7 @@
         }"
         v-for="tag in novel.tags"
         :key="tag.name"
-        >#{{ tag.name }}</router-link
-      >
+      >#{{ tag.name }}</router-link>
     </div>
   </div>
 </template>
@@ -81,6 +76,7 @@ export default {
 <style lang="stylus" scoped>
 .novel-meta {
   font-size: 16px;
+  font-weight: normal;
   line-height: 1.5;
   color: #1f1f1f;
   background: #e6f1fa;
