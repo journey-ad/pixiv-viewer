@@ -9,6 +9,7 @@ import '@vant/touch-emulator';
 import VueAwesomeSwiper from 'vue-awesome-swiper'
 import VCalendar from 'v-calendar';
 import waterfall from 'vue-waterfall2'
+import { isMobileOnly as isMobile, isMobileSafari, isAndroid, isIOS, isBrowser as isPC } from 'mobile-device-detect'
 
 import 'swiper/css/swiper.css'
 import '@/assets/css/base.styl'
@@ -37,6 +38,14 @@ Vue.config.productionTip = true
 document.addEventListener('gesturestart', function (e) {
   e.preventDefault();
 });
+
+Vue.prototype.$env = {
+  isDev: process.env.NODE_ENV === 'development',
+  isProd: process.env.NODE_ENV === 'production',
+  isDebug: location.search.indexOf('debug=1') > -1,
+  isMobile, isMobileSafari, isAndroid, isIOS, isPC,
+  docTitle: document.title,
+}
 
 new Vue({
   router,

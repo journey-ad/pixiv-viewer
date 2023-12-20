@@ -1,5 +1,5 @@
 <template>
-  <div class="chapter" @scroll="scrollHandler" ref="chapterEl">
+  <div class="chapter" ref="chapterEl">
     <div class="topbar__wrapper" :class="{ show: isActionShow }">
       <div class="chapter-name">{{ novel.title }}</div>
       <TopBar :transparent="true" color="dark" :padding="false" />
@@ -7,18 +7,22 @@
         <Icon class="icon-setting" name="setting"></Icon>
       </div>
     </div>
+    <div class="page">{{ `${page} / ${total}` }}</div>
+    <transition name="fade">
+      <div class="loading" v-if="loading">加载中...</div>
+    </transition>
     <div
       class="novel-content__wrapper"
       :style="viewerStyle"
       @pointerdown.prevent.stop="handleTouchStart"
-      @pointermove.prevent.stop="handleTouchMove"
+      @pointermove.stop.prevent="handleTouchMove"
       @pointerup.prevent.stop="handleTouchEnd"
-      v-prevent="['touchstart', 'touchmove', 'touchend', 'mousedown', 'mousemove', 'mouseup', 'click']"
+      @scroll.stop.prevent
+      @touchmove.stop.prevent
+      @mousemove.stop.prevent
+      v1-prevent="['touchmove','mousemove']"
       ref="novelContentWrapper"
     >
-      <transition name="fade">
-        <div class="loading" v-if="loading">加载中...</div>
-      </transition>
       <!-- <NovelMeta :novel="novel" /> -->
       <template v-if="!loading">
         <div
@@ -27,7 +31,6 @@
           v-html="parsedContent"
           ref="novelContentEl"
         ></div>
-        <div class="page">{{ `${page} / ${total}` }}</div>
       </template>
     </div>
     <div class="setting__wrapper" :class="{ show: isSettingShow }">
@@ -327,6 +330,8 @@ export default {
     parseNovel(novel) {
       let content = novel.content;
 
+      // content = "载".repeat(10000);
+
       const parseMap = (tag, from, to) => {
         console.log(tag, from, to);
         switch (tag) {
@@ -384,20 +389,19 @@ export default {
       const wrapEL = this.$refs.novelContentWrapper;
       if (!wrapEL) return;
 
-      this.total = Math.floor(
-        wrapEL.scrollWidth / (wrapEL.clientWidth - readerSetting.padding)
-      );
+      this.total = Math.ceil(wrapEL.scrollWidth / wrapEL.clientWidth);
     },
-    changePage(index) {
+    changePage(index, animate = true) {
       // 已经是首尾 仍然继续翻页时 提示已经到头了
       if (index < 1 || index > this.total) {
-        this.isActionShow = true;
-
         this.$toast({
           message: index < 1 ? "已经是第一页了" : "已经是最后一页了",
           duration: 2000,
         });
-        return;
+
+        this.isActionShow = true;
+
+        index = Math.min(Math.max(index, 1), this.total);
       }
 
       // 从首尾往回翻页时 隐藏顶栏
@@ -411,24 +415,27 @@ export default {
       this.page = index;
 
       const wrapEL = this.$refs.novelContentWrapper;
-      const pageWidth = wrapEL.clientWidth - readerSetting.padding;
+      const contentEL = this.$refs.novelContentEl;
+      const pageWidth = wrapEL.clientWidth;
 
-      if (wrapEL._gsapInstance) wrapEL._gsapInstance.pause().kill();
-      wrapEL._gsapInstance = gsap.to(wrapEL, {
-        duration: 0.2,
+      if (contentEL._gsapInstance) contentEL._gsapInstance.pause().kill();
+      contentEL._gsapInstance = gsap.to(contentEL, {
+        duration: animate ? 0.2 : 0,
         ease: "power1.inOut",
-        scrollLeft: pageWidth * (index - 1),
+        // scrollLeft: pageWidth * (index - 1),
+        x: -pageWidth * (index - 1),
       });
 
       console.log(
         "changePage",
         [this.page, this.total],
-        [wrapEL.scrollLeft, wrapEL.scrollWidth],
+        // [wrapEL.scrollLeft, wrapEL.scrollWidth],
+        [contentEL._gsap.x, contentEL.clientWidth],
         pageWidth
       );
     },
-    addPage(num) {
-      this.changePage(this.page + num);
+    addPage(num, animate = true) {
+      this.changePage(this.page + num, animate);
     },
     toTop() {
       this.$refs.chapterEl.scrollTo({ top: 0, behavior: "smooth" });
@@ -487,12 +494,12 @@ export default {
         case "back":
           this.isActionShow = false;
           this.isSettingShow = false;
-          this.addPage(-1);
+          this.addPage(-1, false);
           break;
         case "next":
           this.isActionShow = false;
           this.isSettingShow = false;
-          this.addPage(1);
+          this.addPage(1, false);
           break;
         default:
           console.warn("click area detect error");
@@ -509,26 +516,37 @@ export default {
       if (this._locking) return;
 
       const { clientX } = e;
-      const wrapEL = this.$refs.novelContentWrapper;
+      const contentEL = this.$refs.novelContentEl;
+
+      const currentX = gsap.getProperty(contentEL, "x");
 
       const lastX = this._lastX || clientX;
 
       let deltaX = lastX - clientX;
       this._lastX = clientX;
 
-      // 滑动幅度较大时 乘以一个系数加速滑动
-      const deltaX_abs = Math.abs(deltaX);
-      if (deltaX_abs > 1.8) {
-        deltaX *= 1.5;
-      } else if (deltaX_abs > 1.3) {
-        deltaX *= 1.1;
+      if (
+        currentX > 0 ||
+        currentX < -contentEL.scrollWidth + contentEL.clientWidth
+      ) {
+        // 边界情况下 滑动幅度减小为0.3倍
+        deltaX *= 0.3;
+      } else {
+        // 滑动幅度较大时 乘以一个系数加速滑动
+        const deltaX_abs = Math.abs(deltaX);
+        if (deltaX_abs > 1.8) {
+          deltaX *= 1.5;
+        } else if (deltaX_abs > 1.3) {
+          deltaX *= 1.1;
+        }
       }
 
       // 记录滑动距离
       this._moveDistance += deltaX;
 
       // 对应移动元素
-      wrapEL.scrollLeft += deltaX;
+      // wrapEL.scrollLeft += deltaX;
+      gsap.set(contentEL, { x: `-=${deltaX}` });
     },
     handleTouchEnd(e) {
       this._isTouching = false;
@@ -556,7 +574,7 @@ export default {
 
       // 处理点击操作
       if (
-        Date.now() - this._startTime < 90 &&
+        Date.now() - this._startTime < 200 &&
         Math.abs(this._moveDistance) < 10
       ) {
         lockMove(200); // 点击翻页时 锁定200ms 防止手滑变成滑动翻页
@@ -644,9 +662,32 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  overflow-y: auto;
-  scroll-behavior: smooth;
+  box-sizing: border-box;
   z-index: 10;
+
+  .page {
+    position: absolute;
+    right: 15px;
+    bottom: 6px;
+    bottom: calc(6px + env(safe-area-inset-bottom));
+    font-size: 24px;
+    font-family: sans-serif;
+    opacity: 0.65;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .loading {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    font-size: 34px;
+    color: #1f1f1f;
+    z-index: 20;
+  }
 }
 
 .topbar__wrapper {
@@ -698,41 +739,22 @@ export default {
 
 .novel-content__wrapper {
   position: relative;
-  display: flex;
-  flex-direction: column;
   height: 100%;
   transition: color 0.3s, background 0.3s;
   user-select: text;
   box-sizing: border-box;
-  overflow-x: hidden;
-
-  .loading {
-    position: absolute;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    font-size: 34px;
-    color: #1f1f1f;
-  }
-
-  .page {
-    position: fixed;
-    right: 15px;
-    bottom: 6px;
-    font-size: 24px;
-    font-family: sans-serif;
-    opacity: 0.65;
-  }
+  overflow: hidden;
+  padding-bottom: 20px;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
 
   .novel-content {
     columns: calc(100vw - 2 * var(--padding)) 1;
     height: 100%;
     padding: var(--padding) 0;
     word-break: break-all;
-    column-gap: calc(var(--padding));
+    column-gap: calc(var(--padding) * 2);
     box-sizing: border-box;
+    text-align: justify;
 
     &.censored {
       filter: blur(16px) opacity(0.5);
