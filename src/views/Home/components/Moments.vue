@@ -7,19 +7,9 @@
       </template>
     </van-cell>
     <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
-      <van-list
-        v-model="loading"
-        :finished="finished"
-        finished-text="没有更多了"
-        @load="getLatest"
-      >
+      <van-list v-model="loading" :finished="finished" finished-text="没有更多了" @load="getLatest">
         <div class="card-box__wrapper" ref="cardBox">
-          <waterfall
-            :col="col"
-            :width="itemWidth"
-            :gutterWidth="0"
-            :data="artList"
-          >
+          <waterfall :col="col" :width="itemWidth" :gutterWidth="0" :data="artList">
             <router-link
               :to="{
                 name: 'Artwork',
@@ -41,7 +31,7 @@
 import { Cell, Swipe, SwipeItem, Icon, List, PullRefresh } from "vant";
 import ImageCard from "@/components/ImageCard";
 import api from "@/api";
-import _ from "lodash";
+import { throttle, uniqBy } from "lodash-es";
 export default {
   name: "Moments",
   data() {
@@ -70,7 +60,7 @@ export default {
       }
       this.isLoading = false;
     },
-    getLatest: _.throttle(async function () {
+    getLatest: throttle(async function () {
       let newList;
       let res = await api.getLatest();
       if (res.status === 0) {
@@ -78,7 +68,7 @@ export default {
         let artList = JSON.parse(JSON.stringify(this.artList));
 
         artList.push(...newList);
-        artList = _.uniqBy(artList, "id");
+        artList = uniqBy(artList, "id");
 
         this.artList = artList;
         this.loading = false;

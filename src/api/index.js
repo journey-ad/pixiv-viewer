@@ -1,6 +1,6 @@
 import { get } from './http'
 import { DBStorage, Expires } from '@/utils/storage'
-import moment from 'moment'
+import dayjs from 'dayjs'
 import { Base64 } from 'js-base64';
 
 const isSupportWebP = (() => {
@@ -241,8 +241,8 @@ const api = {
    * @param {Number} page 页数 
    * @param {String} date YYYY-MM-DD 默认为「前天」
    */
-  async getRankList(mode = 'weekly', page = 1, date = moment().subtract(2, 'days').format('YYYY-MM-DD')) {
-    date = moment(date).format('YYYY-MM-DD')
+  async getRankList(mode = 'weekly', page = 1, date = dayjs().subtract(2, 'days').format('YYYY-MM-DD')) {
+    date = dayjs(date).format('YYYY-MM-DD')
 
     const cache_key = `rankList_${mode}_${date}_${page}`
     let rankList = await DBStorage.get(cache_key)

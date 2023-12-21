@@ -130,11 +130,11 @@
 
 <script>
 import { Slider } from "vant";
-import { debounce } from "lodash";
+import { debounce } from "lodash-es";
 import gsap from "gsap";
-import * as OpenCC from "opencc-js";
 import { LocalStorage } from "@/utils/storage";
 import { setThemeColor } from "@/utils";
+const loadOpenCC = () => import("opencc-js");
 
 const _READER_SETTING_KEY = "__PIXIV_readerSetting";
 
@@ -148,16 +148,29 @@ let readerSetting = LocalStorage.get(_READER_SETTING_KEY, {
   zhTrans: 0,
 });
 
-const converter = {
-  s2t: new OpenCC.Converter({
-    from: "cn",
-    to: "tw",
-  }),
-  t2s: new OpenCC.Converter({
-    from: "tw",
-    to: "cn",
-  }),
-};
+class Converter {
+  constructor() {
+    this.inited = false;
+  }
+
+  async init() {
+    const OpenCC = await loadOpenCC();
+
+    this.s2t = new OpenCC.Converter({
+      from: "cn",
+      to: "tw",
+    });
+
+    this.t2s = new OpenCC.Converter({
+      from: "tw",
+      to: "cn",
+    });
+
+    this.inited = true;
+  }
+}
+
+const converter = new Converter();
 
 export default {
   name: "novel-reader",
@@ -309,13 +322,16 @@ export default {
       }
       setThemeColor(this.viewerStyle.backgroundColor);
     },
-    parseNovel() {
+    async parseNovel() {
       if (!this.content) return;
 
       let content = this.content;
       // content = "载".repeat(10000);
 
       const _now = Date.now();
+      if (!converter.inited && this.readerConfig.zhTrans.value > 0) {
+        await converter.init();
+      }
       switch (this.readerConfig.zhTrans.value) {
         case 1: {
           content = converter.t2s(content);

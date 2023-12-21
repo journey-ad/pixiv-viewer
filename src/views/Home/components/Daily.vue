@@ -42,7 +42,7 @@
 import { Cell, Swipe, SwipeItem, Icon, List, PullRefresh } from "vant";
 import ImageCard from "@/components/ImageCard";
 import api from "@/api";
-import _ from "lodash";
+import { throttle, uniqBy } from "lodash-es";
 export default {
   name: "Daily",
   data() {
@@ -60,14 +60,14 @@ export default {
     url(id, index) {
       return api.url(id, index);
     },
-    getRankList: _.throttle(async function () {
+    getRankList: throttle(async function () {
       let res = await api.getRankList("day", this.curPage);
       if (res.status === 0) {
         let newList = res.data;
         let artList = JSON.parse(JSON.stringify(this.artList));
 
         artList.push(...newList);
-        artList = _.uniqBy(artList, "id");
+        artList = uniqBy(artList, "id");
 
         this.artList = artList;
         this.loading = false;

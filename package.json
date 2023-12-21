@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
+    "build": "vue-cli-service build --modern",
+    "analyze": "vue-cli-service build --modern --report",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
@@ -12,6 +13,7 @@
     "@vue/cli-plugin-pwa": "^4.5.19",
     "axios": "^0.19.2",
     "core-js": "^3.34.0",
+    "dayjs": "^1.11.10",
     "file-saver": "^2.0.2",
     "gif.js": "^0.2.0",
     "gifshot": "^0.4.5",
@@ -19,9 +21,8 @@
     "js-base64": "^2.5.2",
     "jszip": "^3.4.0",
     "localforage": "^1.10.0",
-    "lodash": "^4.17.15",
+    "lodash-es": "^4.17.21",
     "mobile-device-detect": "^0.4.3",
-    "moment": "^2.24.0",
     "opencc-js": "^1.0.5",
     "register-service-worker": "^1.7.2",
     "swiper": "^5.3.6",
@@ -30,7 +31,6 @@
     "vue": "^2.7.15",
     "vue-awesome-swiper": "^4.1.0",
     "vue-concise-slider": "^3.4.4",
-    "vue-moment": "^4.1.0",
     "vue-router": "^3.6.5",
     "vue-waterfall2": "1.10.6",
     "vuex": "^3.6.2",

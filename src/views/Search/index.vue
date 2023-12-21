@@ -130,7 +130,7 @@ import NovelCard from "@/components/NovelCard";
 import Tags from "./components/Tags";
 import ImageSearch from "./components/ImageSearch";
 import { mapState, mapActions } from "vuex";
-import _ from "lodash";
+import { throttle, uniqBy } from "lodash-es";
 import api from "@/api";
 export default {
   beforeRouteEnter(to, from, next) {
@@ -236,7 +236,7 @@ export default {
       this.resize();
       this.search(this.keywords);
     },
-    search: _.throttle(async function (val) {
+    search: throttle(async function (val) {
       val = val || this.keywords;
       this.keywords__ = val;
       val = val.trim();
@@ -255,7 +255,7 @@ export default {
         let artList = JSON.parse(JSON.stringify(this.artList));
 
         artList.push(...newList);
-        artList = _.uniqBy(artList, "id");
+        artList = uniqBy(artList, "id");
 
         this.artList = artList;
         this.loading = false;

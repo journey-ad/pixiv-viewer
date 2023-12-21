@@ -66,12 +66,12 @@
 </template>
 
 <script>
-import moment from "moment";
+import dayjs from "dayjs";
 import { List, Loading, Empty } from "vant";
 import ImageCard from "@/components/ImageCard";
 import Nav from "./components/Nav";
 import Top3 from "./components/Top3";
-import _ from "lodash";
+import { throttle, uniqBy } from "lodash-es";
 import api from "@/api";
 export default {
   name: "Rank",
@@ -89,9 +89,9 @@ export default {
       col: 2,
       itemWidth: 0,
       scrollTop: 0,
-      minDate: moment("2007-09-13").toDate(),
-      maxDate: moment().subtract(2, "days").toDate(),
-      date: moment().subtract(2, "days").toDate(),
+      minDate: dayjs("2007-09-13").toDate(),
+      maxDate: dayjs().subtract(2, "days").toDate(),
+      date: dayjs().subtract(2, "days").toDate(),
       isDatePickerShow: false,
       curType: "daily",
       curPage: 1,
@@ -116,7 +116,7 @@ export default {
   },
   computed: {
     dateNum() {
-      return moment(this.date).date();
+      return dayjs(this.date).date();
     },
   },
   watch: {
@@ -149,7 +149,7 @@ export default {
     getIOType(type) {
       return this.menu[type] ? this.menu[type].io : null;
     },
-    getRankList: _.throttle(async function () {
+    getRankList: throttle(async function () {
       let type = this.getIOType(this.curType);
       let res = await api.getRankList(type, this.curPage, this.date);
       if (res.status === 0) {
@@ -157,7 +157,7 @@ export default {
         let artList = JSON.parse(JSON.stringify(this.artList));
 
         artList.push(...newList);
-        artList = _.uniqBy(artList, "id");
+        artList = uniqBy(artList, "id");
 
         this.artList = artList;
         this.loading = false;

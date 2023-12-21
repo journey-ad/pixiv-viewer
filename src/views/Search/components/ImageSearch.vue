@@ -40,7 +40,7 @@
 
 <script>
 import { Uploader } from "vant";
-import _ from "lodash";
+import { throttle, uniqBy } from "lodash-es";
 export default {
   computed: {
     resultList() {
@@ -56,8 +56,8 @@ export default {
         };
       });
 
-      list = _.uniqBy(list, "id");
-      list = _.orderBy(list, "similarity", "desc");
+      list = uniqBy(list, "id");
+      list = orderBy(list, "similarity", "desc");
 
       return list;
     }

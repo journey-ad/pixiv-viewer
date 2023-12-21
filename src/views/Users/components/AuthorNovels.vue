@@ -49,7 +49,7 @@
 import { Cell, Swipe, SwipeItem, Icon, List, PullRefresh } from "vant";
 import NovelCard from "@/components/NovelCard";
 import api from "@/api";
-import _ from "lodash";
+import { throttle, uniqBy } from "lodash-es";
 export default {
   name: "AuthorNovels",
   props: {
@@ -81,7 +81,7 @@ export default {
       this.curPage = 1;
       this.artList = [];
     },
-    getMemberNovel: _.throttle(async function () {
+    getMemberNovel: throttle(async function () {
       if (!this.id) return;
       let newList;
       let res = await api.getMemberNovel(this.id, this.curPage);
@@ -97,7 +97,7 @@ export default {
         let artList = JSON.parse(JSON.stringify(this.artList));
 
         artList.push(...newList);
-        artList = _.uniqBy(artList, "id");
+        artList = uniqBy(artList, "id");
 
         this.artList = artList;
         this.loading = false;

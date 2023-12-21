@@ -49,7 +49,7 @@
 import { Cell, Swipe, SwipeItem, Icon, List, PullRefresh } from "vant";
 import ImageCard from "@/components/ImageCard";
 import api from "@/api";
-import _ from "lodash";
+import { throttle, uniqBy } from "lodash-es";
 export default {
   name: "AuthorIllusts",
   props: {
@@ -81,7 +81,7 @@ export default {
       this.curPage = 1;
       this.artList = [];
     },
-    getMemberArtwork: _.throttle(async function () {
+    getMemberArtwork: throttle(async function () {
       if (!this.id) return;
       let newList;
       let res = await api.getMemberArtwork(this.id, this.curPage);
@@ -97,7 +97,7 @@ export default {
         let artList = JSON.parse(JSON.stringify(this.artList));
 
         artList.push(...newList);
-        artList = _.uniqBy(artList, "id");
+        artList = uniqBy(artList, "id");
 
         this.artList = artList;
         this.loading = false;

@@ -27,7 +27,7 @@
     </div>
     <div class="date">
       <span class="created">{{
-        artwork.created | moment("YYYY-MM-DD hh:mm")
+        artwork.created | dayjs("YYYY-MM-DD hh:mm")
       }}</span>
       <span class="view">
         <Icon name="view" class="icon"></Icon>

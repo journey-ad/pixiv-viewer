@@ -15,12 +15,7 @@
       @load="getRelated()"
     >
       <div class="card-box__wrapper" ref="cardBox">
-        <waterfall
-          :col="col"
-          :width="itemWidth"
-          :gutterWidth="0"
-          :data="artList"
-        >
+        <waterfall :col="col" :width="itemWidth" :gutterWidth="0" :data="artList">
           <router-link
             :to="{
               name: 'Artwork',
@@ -41,7 +36,7 @@
 import { Cell, Swipe, SwipeItem, Icon, List, PullRefresh } from "vant";
 import ImageCard from "@/components/ImageCard";
 import api from "@/api";
-import _ from "lodash";
+import { throttle, uniqBy } from "lodash-es";
 export default {
   name: "Related",
   props: {
@@ -69,7 +64,7 @@ export default {
       this.curPage = 1;
       this.artList = [];
     },
-    getRelated: _.throttle(async function () {
+    getRelated: throttle(async function () {
       if (!this.artwork.id) return;
       let newList;
       let res = await api.getRelated(this.artwork.id, this.curPage);
@@ -78,7 +73,7 @@ export default {
         let artList = JSON.parse(JSON.stringify(this.artList));
 
         artList = artList.concat(newList);
-        artList = _.uniqBy(artList, "id");
+        artList = uniqBy(artList, "id");
 
         this.artList = artList;
         this.loading = false;
