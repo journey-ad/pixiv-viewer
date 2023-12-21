@@ -17,17 +17,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@master
-          
+
       - name: Installation Environment
         uses: actions/setup-node@master
         with:
-          node-version: 16.x  
+          node-version: 16.x
 
       - name: Installation
-        run: npm install
-          
+        uses: borales/actions-yarn@master
+        with:
+          cmd: install
+
       - name: Build
-        run: npm run build
+        uses: borales/actions-yarn@master
+        with:
+          cmd: build
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
