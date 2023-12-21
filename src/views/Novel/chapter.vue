@@ -17,7 +17,7 @@
       @pointerdown.prevent.stop="handleTouchStart"
       @pointermove.stop.prevent="handleTouchMove"
       @pointerup.prevent.stop="handleTouchEnd"
-      v-prevent="['touchmove','mousemove']"
+      v-prevent="['touchmove', 'mousemove']"
       ref="novelContentWrapper"
     >
       <!-- <NovelMeta :novel="novel" /> -->
@@ -99,7 +99,7 @@
         <div class="action-item">
           <span class="label">选择字体</span>
           <span
-            class="font"
+            class="btn font"
             :class="{ active: readerConfig.fontFamily.value === index }"
             :style="{
               fontFamily: item.font,
@@ -112,10 +112,28 @@
         <div class="action-item">
           <span class="label">文字样式</span>
           <span
-            class="bold-switch"
+            class="btn bold-switch"
             :class="{ active: readerConfig.bold.value }"
             @click="readerConfig.bold.value = !readerConfig.bold.value"
           >B</span>
+          <span
+            class="btn zh-trans"
+            @click="
+              () => {
+                readerConfig.zhTrans.value++;
+                if (readerConfig.zhTrans.value > 2) {
+                  readerConfig.zhTrans.value = 0;
+                }
+                parseNovel(novel);
+              }
+            "
+          >
+            <em
+              :class="{ cur: readerConfig.zhTrans.value === index }"
+              v-for="(char, index) in '原简繁'"
+              :key="index"
+            >{{ char }}</em>
+          </span>
         </div>
       </div>
     </div>
@@ -133,6 +151,7 @@ import { setThemeColor } from "@/utils";
 import { LocalStorage } from "@/utils/storage";
 import api from "@/api";
 import gsap from "gsap";
+import * as OpenCC from "opencc-js";
 
 const _READER_SETTING_KEY = "__PIXIV_readerSetting";
 
@@ -143,7 +162,19 @@ let readerSetting = LocalStorage.get(_READER_SETTING_KEY, {
   theme: 0,
   fontFamily: 0,
   bold: false,
+  zhTrans: 0,
 });
+
+const converter = {
+  s2t: new OpenCC.Converter({
+    from: "cn",
+    to: "tw",
+  }),
+  t2s: new OpenCC.Converter({
+    from: "tw",
+    to: "cn",
+  }),
+};
 
 export default {
   name: "Chapter",
@@ -218,6 +249,11 @@ export default {
         bold: {
           type: "boolean",
           value: false,
+        },
+        zhTrans: {
+          type: "number",
+          value: 0,
+          range: [0, 2],
         },
       },
       themeList: [
@@ -340,7 +376,6 @@ export default {
     },
     parseNovel(novel) {
       let content = novel.content;
-
       // content = "载".repeat(10000);
 
       const parseMap = (tag, from, to) => {
@@ -374,6 +409,20 @@ export default {
 
         return `<p>${line}</p>`;
       };
+
+      const _now = Date.now();
+      switch (this.readerConfig.zhTrans.value) {
+        case 1: {
+          content = converter.t2s(content);
+          console.log(`繁 -> 简 耗时: ${Date.now() - _now}ms`);
+          break;
+        }
+        case 2: {
+          content = converter.s2t(content);
+          console.log(`简 -> 繁 耗时: ${Date.now() - _now}ms`);
+          break;
+        }
+      }
 
       content = content.split("\n").map(parseLine).join("");
 
@@ -781,7 +830,8 @@ export default {
       }
 
       p {
-        margin: 1em 0;
+        margin: 0;
+        margin-bottom: 1em;
       }
 
       h2 {
@@ -868,7 +918,7 @@ export default {
     .label {
       margin-right: 10px;
 
-      & ~ span {
+      & + span {
         margin-left: 10px;
       }
     }
@@ -891,7 +941,7 @@ export default {
       }
     }
 
-    .font {
+    .btn {
       display: flex;
       justify-content: center;
       align-items: center;
@@ -910,20 +960,24 @@ export default {
     }
 
     .bold-switch {
-      display: flex;
-      justify-content: center;
-      align-items: center;
       width: 50px;
-      height: 42px;
-      font-size: 24px;
-      line-height: 1;
-      border: 2px solid #a6a6a6;
-      border-radius: 10px;
-      cursor: pointer;
 
       &.active {
         font-weight: bold;
-        border-color: #ffcd59;
+      }
+    }
+
+    .zh-trans {
+      display: flex;
+      align-items: center;
+      line-height: 1;
+
+      em {
+        font-size: 20px;
+
+        &.cur {
+          font-size: 28px;
+        }
       }
     }
   }

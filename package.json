@@ -22,6 +22,7 @@
     "lodash": "^4.17.15",
     "mobile-device-detect": "^0.4.3",
     "moment": "^2.24.0",
+    "opencc-js": "^1.0.5",
     "register-service-worker": "^1.7.2",
     "swiper": "^5.3.6",
     "v-calendar": "^1.0.3",
