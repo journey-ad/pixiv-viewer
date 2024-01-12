@@ -51,7 +51,7 @@ export default {
     return {
       buildDate: dateFormat(__BUILD_TIMESTAMP__, "yyyy-MM-dd"),
       currentSETTING: {
-        api: "https://hibiapi.journeyad.repl.co/api/",
+        api: "https://hibiapi.getloli.com/api/",
         r18: false,
         r18g: false,
       },
@@ -132,11 +132,11 @@ export default {
     },
   },
   mounted() {
-    this.currentSETTING = JSON.parse(JSON.stringify(this.SETTING));
+    this.currentSETTING = Object.assign({}, this.currentSETTING, this.SETTING);
     this.calcCacheSize();
   },
   updated() {
-    this.saveSETTING(JSON.parse(JSON.stringify(this.currentSETTING)));
+    this.saveSETTING(this.currentSETTING);
   },
   components: {
     [Cell.name]: Cell,

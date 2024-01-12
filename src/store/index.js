@@ -12,7 +12,7 @@ export default new Vuex.Store({
     $swiper: null,
     searchHistory: LocalStorage.get('__PIXIV_searchHistory', []),
     SETTING: LocalStorage.get('__PIXIV_SETTING', {
-      api: "https://hibiapi.journeyad.repl.co/api/",
+      api: "https://hibiapi.getloli.com/api/",
       r18: false,
       r18g: false
     }),
@@ -54,7 +54,7 @@ export default new Vuex.Store({
       }
     },
     saveSETTING(state, obj) {
-      state.SETTING = obj
+      Vue.set(state, 'SETTING', Object.assign({}, state.SETTING, obj))
       LocalStorage.set('__PIXIV_SETTING', state.SETTING)
     }
   },
