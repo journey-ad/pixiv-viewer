@@ -16,7 +16,7 @@ const isSupportWebP = (() => {
 })();
 
 const imgProxy = url => {
-  let result = url.replace(/i.pximg.net/g, 'pximg.pixiv-viewer.workers.dev')
+  let result = url.replace(/i.pximg.net/g, 'pximg.journey-ad.workers.dev')
 
   if (!isSupportWebP) {
     result = result.replace(/_10_webp/g, '_70')
