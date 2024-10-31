@@ -15,8 +15,14 @@ const isSupportWebP = (() => {
   return false;
 })();
 
+const imgProxyList = [
+  'pximg.jad-sub-0.workers.dev',
+  'pximg.jad-sub-1.workers.dev',
+  'pximg.jad-sub-2.workers.dev',
+]
+
 const imgProxy = url => {
-  let result = url.replace(/i.pximg.net/g, 'pximg.journey-ad.workers.dev')
+  let result = url.replace(/i.pximg.net/g, imgProxyList[Math.floor(Math.random() * imgProxyList.length)])
 
   if (!isSupportWebP) {
     result = result.replace(/_10_webp/g, '_70')
